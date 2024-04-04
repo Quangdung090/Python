@@ -133,10 +133,8 @@ if __name__ == "__main__":
     # lbImg.pack()
     
     def UploadAction(event=None):
-        filename = filedialog.askopenfilename()
+        image_path = filedialog.askopenfilename()
         # print("Selected: ", filename)
-        tempList = filename.split("/")
-        image_path = tempList[len(tempList) - 1]
 
         img = crop_text(image_path)
         prediction = cropSentence(img)
