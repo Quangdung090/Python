@@ -8,6 +8,7 @@ from tkinter import filedialog
 from PIL import ImageTk, Image
 from fpdf import FPDF
 from pyaspeller import YandexSpeller
+from tkinter.ttk import *
 
 
 
@@ -125,7 +126,7 @@ if __name__ == "__main__":
     root.title("Hand-writing Recognize")
     root.geometry('1080x720')
     
-    resultText = Text(root, height=20)
+    resultText = Text(root, height=20, width=50)
     resultText.configure(state=DISABLED, bg="white",fg="black",font=("Comic Sans MS",16))
     resultText.grid(row=1, column=0, sticky=EW)
     
@@ -205,8 +206,16 @@ if __name__ == "__main__":
         pdf.output("output.pdf")  
         
 
-    uploadBtn = Button(root, text="Choose file to upload", bg="white",borderwidth=1,relief="solid",command=UploadAction)
-    uploadBtn.grid(column=0,row=0,padx=500,pady=10)
+    # Create style Object
+    style = Style()
+ 
+    style.configure('TButton', font =('calibri', 20, 'bold'),borderwidth = '4')
+ 
+    # Changes will be reflected
+    # by the movement of mouse.
+    style.map('TButton', foreground = [('active', '!disabled', 'green')],background = [('active', 'black')])
+    uploadBtn = Button(root, text="Choose file to upload", command=UploadAction)
+    uploadBtn.grid(column=0,row=0,padx=400,pady=10)
     
     root.mainloop()
     
