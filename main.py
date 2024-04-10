@@ -2,13 +2,16 @@
 import cv2
 import typing
 import numpy as np
+import language_tool_python
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk, Image
 from fpdf import FPDF
+from pyaspeller import YandexSpeller
 
 
-from autocorrect import Speller
+
+# from autocorrect import Speller
 from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder, get_cer, get_wer
 from mltu.transformers import ImageResizer
@@ -38,7 +41,7 @@ class ImageToWordModel(OnnxInferenceModel):
 
 def cropSentence(img):
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, thresh2 = cv2.threshold(img_gray, 150, 255, cv2.THRESH_BINARY_INV)
+    ret, thresh2 = cv2.threshold(img_gray, 100, 255, cv2.THRESH_BINARY_INV)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (150,2))
     mask = cv2.morphologyEx(thresh2, cv2.MORPH_DILATE, kernel)
     bboxes = []
@@ -46,16 +49,15 @@ def cropSentence(img):
     contours = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = contours[0] if len(contours) == 2 else contours[1]
     prediction = []
-    spell = Speller()
     for cntr in contours:
         x,y,w,h = cv2.boundingRect(cntr)
-        cv2.rectangle(bboxes_img, (x, y), (x+w, y+h), (0,0,255), 1)
+        cv2.rectangle(bboxes_img, (x, y), (x+w, y+h), (0,0,255), 2)
         crop_img = img[y:y+h, x:x+w]
-        prediction_text = spell(model.predict(crop_img))
+        prediction_text = model.predict(crop_img)
         cv2.putText(bboxes_img, prediction_text, (x, y -4), 0, 0.02*h, (30,15,252), ((w+h)//900)//3)
+        prediction.append(prediction_text)
 
         # print("Prediction: ", prediction_text)
-        prediction.append(prediction_text)
         # cv2.imshow(predictiont_tex,crop_img)
         # cv2.waitKey(0)
         bboxes.append((x,y,w,h))
@@ -77,6 +79,20 @@ def crop_text(img_path):
     rect = img[y-2:y+h-4, x:x+w]
     return rect
 
+
+def error_correcting(text):
+    tool = language_tool_python.LanguageTool('en-US')
+    datasets = tool.correct(text)
+    return datasets
+
+def error_correct_pyspeller(sample_text):
+    speller = YandexSpeller()
+    fixed = speller.spelled(sample_text)
+    return fixed
+
+def wordSpliter(str,n=12):
+    pieces = str.split()
+    return (" ".join(pieces[i:i+n]) for i in range(0, len(pieces), n))
 
 if __name__ == "__main__":
     import pandas as pd
@@ -136,7 +152,8 @@ if __name__ == "__main__":
         image_path = filedialog.askopenfilename()
         # print("Selected: ", filename)
 
-        img = crop_text(image_path)
+        # img = crop_text(image_path)
+        img = cv2.imread(image_path)
         prediction = cropSentence(img)
         
         # showImg = ImageTk.PhotoImage(Image.open(image_path))
@@ -145,15 +162,30 @@ if __name__ == "__main__":
         while prediction:
             if len(prediction) == 0:
                 break
-            final_prediction += prediction.pop() + '\n'
+            final_prediction += prediction.pop() + ' '
         # print(final_prediction)
         # lb.configure(text = final_prediction)
+
+        # tool = language_tool_python.LanguageTool('en-US')
+        # matches = tool.check(final_prediction)
+        # print(len(matches))
+        # for i in matches:
+        #     print(i)
+        output_text = error_correct_pyspeller(final_prediction)
+        # print(output_text)
+
+        output_data = error_correcting(output_text)
+        # print(output_data)
+        # matches = tool.check(output_text)
+        # print(len(matches))
+        # for i in matches:
+        #     print(i)        
+        testArray = wordSpliter(output_data)
         resultText.configure(state=NORMAL)
-        resultText.insert(END,final_prediction)
+        resultText.insert(END,"\n".join(testArray))
         resultText.configure(state=DISABLED)
         # lbImg.configure(image = showImg)
         
-        testArray = final_prediction.split("\n")
         # print(testArray)
         
         pdf = FPDF()   
@@ -165,6 +197,8 @@ if __name__ == "__main__":
          #that you want in the pdf
         pdf.set_font("Arial", size = 15)
         
+
+        # pdf.cell(200,35,txt=output_data,ln=10,align='J')
         for x in testArray:
             pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
             
