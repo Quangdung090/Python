@@ -5,6 +5,7 @@ import numpy as np
 import language_tool_python
 from tkinter import *
 from tkinter import filedialog
+from tkinter import messagebox as mb
 from PIL import ImageTk, Image
 from fpdf import FPDF
 from pyaspeller import YandexSpeller
@@ -126,13 +127,14 @@ if __name__ == "__main__":
     root.title("Hand-writing Recognize")
     root.geometry('1080x720')
     
-    resultText = Text(root, height=20, width=50)
+    resultText = Text(root, height=22,width=80)
     resultText.configure(state=DISABLED, bg="white",fg="black",font=("Comic Sans MS",16))
-    resultText.grid(row=1, column=0, sticky=EW)
+    # resultText.grid(row=1, column=0, sticky=EW)
+    resultText.pack(side=BOTTOM)
     
     # create a scrollbar widget and set its command to the text widget
     scrollbar = Scrollbar(root, orient='vertical', command=resultText.yview)
-    scrollbar.grid(row=1, column=1, sticky=NS)
+    # scrollbar.grid(row=1, column=1, sticky=NS)
 
     #  communicate back to the scrollbar
     resultText['yscrollcommand'] = scrollbar.set
@@ -181,15 +183,24 @@ if __name__ == "__main__":
         # print(len(matches))
         # for i in matches:
         #     print(i)        
-        testArray = wordSpliter(output_data)
+        resultTextInputArray = wordSpliter(output_data)
         resultText.configure(state=NORMAL)
-        resultText.insert(END,"\n".join(testArray))
+        resultText.insert(END,"\n".join(resultTextInputArray))
         resultText.configure(state=DISABLED)
         # lbImg.configure(image = showImg)
+        global pdfTextArray
         
-        # print(testArray)
+        pdfTextArray = wordSpliter(output_data)
+    
+    def clearResultText(event=None):
+        resultText.configure(state=NORMAL)
+        resultText.delete(1.0,END)
+        resultText.configure(state=DISABLED)
         
-        pdf = FPDF()   
+    # Hàm lưu file pdf #   
+    def saveAsPdf(event=None):
+        
+        pdf = FPDF()
   
          #Add a page
         pdf.add_page()
@@ -198,13 +209,19 @@ if __name__ == "__main__":
          #that you want in the pdf
         pdf.set_font("Arial", size = 15)
         
-
         # pdf.cell(200,35,txt=output_data,ln=10,align='J')
-        for x in testArray:
+        for x in pdfTextArray:
             pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
             
-        pdf.output("output.pdf")  
+        pdf.output("output.pdf")     
         
+    def showConfirmDialog(event=None):
+        result = mb.askquestion('Exit Application', 'Do you really want to exit?')
+        
+        if(result == 'yes'):
+            root.destroy()
+        else:
+            return
 
     # Create style Object
     style = Style()
@@ -213,9 +230,25 @@ if __name__ == "__main__":
  
     # Changes will be reflected
     # by the movement of mouse.
+    # click_btn= PhotoImage(file='D:\Study\Python\hand_writing\Images\click.png')
+    
     style.map('TButton', foreground = [('active', '!disabled', 'green')],background = [('active', 'black')])
-    uploadBtn = Button(root, text="Choose file to upload", command=UploadAction)
-    uploadBtn.grid(column=0,row=0,padx=400,pady=10)
+    uploadBtn = Button(root, text="Choose file to upload",command=UploadAction)
+    saveAsPdfBtn = Button(root, text="Save as PDF",command=saveAsPdf)
+    clearResultTextBtn = Button(root, text="Clear Text",command=clearResultText)
+    closeAppBtn = Button(root, text="Quit Application",command=showConfirmDialog)
+    
+    uploadBtn.pack(side=LEFT)
+    clearResultTextBtn.pack(side=LEFT)
+    saveAsPdfBtn.pack(side=LEFT)
+    closeAppBtn.pack(side=LEFT)
+    
+    
+    # menu = Menu(root)
+    # root.config(menu=menu)
+    # filemenu = Menu(menu)
+    # menu.add_cascade(label='File', menu=filemenu)
+    # filemenu.add_command(label="Choose a file to upload", command=UploadAction)
     
     root.mainloop()
     
