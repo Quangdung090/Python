@@ -216,7 +216,7 @@ if __name__ == "__main__":
         pdf.output("output.pdf")     
         
     def showConfirmDialog(event=None):
-        result = mb.askquestion('Exit Application', 'Do you really want to exit?')
+        result = mb.askquestion('Exit Application', 'Do you really want to exit?') # mb = messagebox (import from tkinter)
         
         if(result == 'yes'):
             root.destroy()
