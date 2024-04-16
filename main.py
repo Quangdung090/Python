@@ -1,7 +1,6 @@
 # inferenceModel.py
 import cv2
 import typing
-import asyncio
 import numpy as np
 import language_tool_python
 import tkinter as tk
@@ -101,13 +100,21 @@ class App:
         GLabel_277.place(x=0,y=140,width=541,height=570)
 
         global GMessage_172
-        GMessage_172=tk.Message(root)
+        Message=tk.Message(root)
         ft = tkFont.Font(family='Times',size=10)
-        GMessage_172["font"] = ft
-        GMessage_172["fg"] = "#333333"
-        GMessage_172["justify"] = "center"
-        GMessage_172["text"] = "Title"
+        Message["font"] = ft
+        Message["fg"] = "#333333"
+        Message["justify"] = "center"
+        Message["text"] = "Title"
+        # GMessage_172.place(x=540,y=140,width=540,height=570)
+        GMessage_172 = tk.Text(root, background=Message.cget("background"), relief="flat",
+        borderwidth=0, font=Message.cget("font"), state="disabled",)
+        GMessage_172.configure(state="normal")
+        GMessage_172.insert(END,"title")
+        GMessage_172.configure(state="disabled")
         GMessage_172.place(x=540,y=140,width=540,height=570)
+        Message.destroy()
+
 
         global GButton_788
         GButton_788=tk.Button(root)
@@ -189,11 +196,103 @@ class App:
         GButton_894["command"] = self.GButton_894_command
         GButton_894.place_forget()
 
+        global GButton_249
+        GButton_249=tk.Button(root)
+        GButton_249["bg"] = "#f0f0f0"
+        GButton_249["cursor"] = "arrow"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_249["font"] = ft
+        GButton_249["fg"] = "#000000"
+        GButton_249["justify"] = "center"
+        GButton_249["text"] = "Dự đoán từng câu"
+        GButton_249.place(x=20,y=20,width=150,height=45)
+        GButton_249["command"] = self.GButton_249_command
+        GButton_249.place_forget()
+
+        global GButton_385
+        GButton_385=tk.Button(root)
+        GButton_385["bg"] = "#f0f0f0"
+        GButton_385["cursor"] = "arrow"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_385["font"] = ft
+        GButton_385["fg"] = "#000000"
+        GButton_385["justify"] = "center"
+        GButton_385["text"] = "Dự Đoán Toàn Bộ"
+        GButton_385.place(x=200,y=20,width=150,height=45)
+        GButton_385["command"] = self.GButton_385_command
+        GButton_385.place_forget()
+
+        global GButton_241
+        GButton_241=tk.Button(root)
+        GButton_241["bg"] = "#f0f0f0"
+        GButton_241["cursor"] = "arrow"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_241["font"] = ft
+        GButton_241["fg"] = "#000000"
+        GButton_241["justify"] = "center"
+        GButton_241["text"] = "Hiển Thị lỗi"
+        GButton_241.place(x=20,y=20,width=150,height=45)
+        GButton_241["command"] = self.GButton_241_command
+        GButton_241.place_forget()
+
+        global GButton_120
+        GButton_120=tk.Button(root)
+        GButton_120["bg"] = "#f0f0f0"
+        GButton_120["cursor"] = "arrow"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_120["font"] = ft
+        GButton_120["fg"] = "#000000"
+        GButton_120["justify"] = "center"
+        GButton_120["text"] = "Sửa Lỗi"
+        GButton_120.place(x=200,y=20,width=150,height=45)
+        GButton_120["command"] = self.GButton_120_command
+        GButton_120.place_forget()
+
+        global GButton_128
+        GButton_128=tk.Button(root)
+        GButton_128["bg"] = "#f0f0f0"
+        GButton_128["cursor"] = "arrow"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_128["font"] = ft
+        GButton_128["fg"] = "#000000"
+        GButton_128["justify"] = "center"
+        GButton_128["text"] = "Tự chỉnh sửa thêm"
+        GButton_128.place(x=20,y=20,width=150,height=45)
+        GButton_128["command"] = self.GButton_128_command
+        GButton_128.place_forget()
+
+        global GButton_695
+        GButton_695=tk.Button(root)
+        GButton_695["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_695["font"] = ft
+        GButton_695["fg"] = "#000000"
+        GButton_695["justify"] = "center"
+        GButton_695["text"] = "Lưu"
+        GButton_695.place(x=20,y=20,width=150,height=45)
+        GButton_695["command"] = self.GButton_695_command
+        GButton_695.place_forget()
+
+        global GButton_391
+        GButton_391=tk.Button(root)
+        GButton_391["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        GButton_391["font"] = ft
+        GButton_391["fg"] = "#000000"
+        GButton_391["justify"] = "center"
+        GButton_391["text"] = "Hủy"
+        GButton_391.place(x=200,y=20,width=150,height=45)
+        GButton_391["command"] = self.GButton_391_command
+        GButton_391.place_forget()
+
     def ChangeText(self,changeText):
-        GMessage_172.configure(text=changeText)
+        GMessage_172.configure(state="normal")
+        GMessage_172.delete(1.0,END)
+        GMessage_172.insert(END,changeText)
+        GMessage_172.configure(state="disabled")
 
     def showImg(self,inputImage):
-        displayImg = ImageResizer.resize_maintaining_aspect_ratio(inputImage,1078,249)
+        displayImg = ImageResizer.resize_maintaining_aspect_ratio(inputImage,541,570)
         im = Image.fromarray(displayImg)
         imtk = ImageTk.PhotoImage(im)
         GLabel_277.configure(image=imtk)
@@ -209,13 +308,20 @@ class App:
 
     def GButton_997_command(self):
         print("clear Text")
-        GMessage_172.configure(text="")
+        self.ChangeText("")
         # Ẩn hết nút
         GButton_788.place_forget()
         GButton_63.place_forget()
         GButton_656.place_forget()
         GButton_29.place_forget()
         GButton_894.place_forget()
+        GButton_249.place_forget()
+        GButton_385.place_forget()
+        GButton_120.place_forget()
+        GButton_241.place_forget()
+        GButton_128.place_forget()
+        GButton_695.place_forget()
+        GButton_391.place_forget()
 
 
     def GButton_470_command(self):
@@ -227,6 +333,13 @@ class App:
         GButton_656.place_forget()
         GButton_29.place_forget()
         GButton_894.place_forget()
+        GButton_249.place_forget()
+        GButton_385.place_forget()
+        GButton_120.place_forget()
+        GButton_241.place_forget()
+        GButton_128.place_forget()
+        GButton_695.place_forget()
+        GButton_391.place_forget()
 
 
     def GButton_413_command(self):
@@ -253,8 +366,12 @@ class App:
 
     def GButton_63_command(self):
         print("dự đoán")
-        predictAction()
-        GButton_63.place_forget()
+        self.final_predict = ""
+        GButton_249.place(x=20,y=20,width=150,height=45)
+        GButton_385.place(x=200,y=20,width=150,height=45)
+        app.showImg(boxImg)
+        # predictAction()
+        # GButton_63.place_forget()
 
     def GButton_29_command(self):
         print("Tô chữ")
@@ -263,7 +380,58 @@ class App:
 
     def GButton_894_command(self):
         print("Đóng khung")
-        asyncio.run(boxesImgAction())
+        boxesImgAction()
+        GButton_894.place_forget()
+        GButton_29.place_forget()
+
+    def GButton_249_command(self):
+        print("Dự đoán từng câu")
+        PredictLineAction()
+
+
+    def GButton_385_command(self):
+        print("Dự đoán toàn bộ")
+        PredictAllAction()
+        GButton_241.place(x=20,y=20,width=150,height=45)
+        GButton_120.place(x=200,y=20,width=150,height=45)
+
+    def GButton_241_command(self):
+        print("Hiển thị lỗi")
+        showErrorAction()
+
+
+    def GButton_120_command(self):
+        print("Sửa Lỗi")
+        self.pdfTextArray = []
+        fixErrorAction()
+        GButton_128.place(x=20,y=20,width=150,height=45)
+        GButton_63.place_forget()
+        GButton_120.place_forget()
+        GButton_385.place_forget()
+
+    def GButton_128_command(self):
+        print("NGười dùng tự sửa thêm")
+        GButton_695.place(x=20,y=20,width=150,height=45)
+        GButton_391.place(x=200,y=20,width=150,height=45)
+        GMessage_172.configure(state="normal")
+
+
+    def GButton_695_command(self):
+        print("Lưu")
+        newOutput = GMessage_172.get(1.0,END)
+        outputArr = newOutput.split('\n')
+        self.pdfTextArray = outputArr
+        GButton_695.place_forget()
+        GButton_391.place_forget()
+        GMessage_172.configure(state="disabled")
+
+
+    def GButton_391_command(self):
+        print("Hủy")
+        GButton_695.place_forget()
+        GButton_391.place_forget()
+        GMessage_172.configure(state="disabled")
+        
         
         
 
@@ -302,24 +470,34 @@ def colorTextAction():
     mask = cv2.morphologyEx(thresh2, cv2.MORPH_DILATE, kernel)
     app.showImg(mask)
 
-async def boxesImgAction():
+def waithere(milisecond=300):
+    var = IntVar()
+    root.after(milisecond, var.set, 1)
+    print("waiting...")
+    root.wait_variable(var)
+
+def boxesImgAction():
     bboxes = []
     bboxes_img = img.copy()
     contours = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = contours[0] if len(contours) == 2 else contours[1]
-    # imgList = []
+
     for cntr in contours:
         x,y,w,h = cv2.boundingRect(cntr)
         cv2.rectangle(bboxes_img, (x, y), (x+w, y+h), (0,0,255), 2)
-        await asyncio.sleep(0.3)
+        waithere()
         app.showImg(bboxes_img)
+        # app.showImg(bboxes_img)
         # cv2.imshow("",bboxes_img)
         # cv2.waitKey(0)
         bboxes.append((x,y,w,h))
+    app.showImg(bboxes_img)
+    
 
 def cropSentence():
     imgGrayAction()
     colorTextAction()
+    global boxImg
     bboxes = []
     bboxes_img = img.copy()
     contours = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -343,14 +521,15 @@ def cropSentence():
     # GLabel_277.configure(image=imtk)
     # GLabel_277.image = imtk
     app.showImg(bboxes_img)
+    boxImg = bboxes_img
     return imgList
 
-def PredictionFormCropImg(Imglist):
-    prediction = []
-    for i in Imglist:
-        prediction_text = model.predict(i)
-        prediction.append(prediction_text)
-    return prediction
+# def PredictionFormCropImg(Imglist):
+#     prediction = []
+#     for i in Imglist:
+#         prediction_text = model.predict(i)
+#         prediction.append(prediction_text)
+#     return prediction
 
 # def crop_text(img_path):
 #     img = cv2.imread(img_path)
@@ -381,6 +560,95 @@ def wordSpliter(str,n=12):
     pieces = str.split()
     return (" ".join(pieces[i:i+n]) for i in range(0, len(pieces), n))
 
+def PredictLineAction():
+    if(len(imgList) <= 0):
+        app.GButton_385_command()
+        return
+    currImg = imgList.pop()
+    app.showImg(currImg)
+    app.ChangeText("waitting...")
+    waithere(100)
+    predictText = model.predict(currImg)
+    app.ChangeText(predictText)
+    app.final_predict = app.final_predict + " " + predictText
+
+def PredictAllAction():
+    app.ChangeText("waitting...")
+    waithere(100)
+    while len(imgList) >0:
+        currImg = imgList.pop()
+        predictText = model.predict(currImg)
+        app.final_predict = app.final_predict + " " + predictText
+    ShowResult = wordSpliter(app.final_predict)
+    app.showImg(boxImg)
+    app.ChangeText("\n".join(ShowResult))
+
+def showErrorAction():
+    app.ChangeText("waitting...")
+    waithere(100)
+    print("start checking")
+    tool = language_tool_python.LanguageTool('en-US')
+    matches = tool.check(app.final_predict)
+
+    resultStr =""
+    for i in matches:
+        resultStr += '\n'+ i.message + '\n' + i.context
+        # resultStr += '\n{}\n{}\n'.format(
+        # i.context, ' ' * (i.offsetInContext)+ '^' * i.errorLength
+        # )
+    app.ChangeText(resultStr)
+
+
+def fixErrorAction():
+    app.ChangeText("waitting...")
+    waithere(100)
+    print("start fixing")
+    # output_text = error_correct_pyspeller(app.final_predict)
+        # print(output_text)
+
+    output_data = error_correcting(app.final_predict)
+    result = wordSpliter(output_data)
+    app.pdfTextArray = wordSpliter(output_data)
+    app.ChangeText("\n".join(result))
+
+def UploadAction(event=None):
+    image_path = filedialog.askopenfilename()
+
+    global img
+    img = cv2.imread(image_path)
+    app.showImg(img)
+
+def cropImageAction():
+    global imgList
+    imgList = cropSentence()
+    
+
+def saveAsPdf(event=None):
+        
+    pdf = FPDF()
+  
+         #Add a page
+    pdf.add_page()
+
+         #set style and size of font 
+         #that you want in the pdf
+    pdf.set_font("Arial", size = 15)
+        
+        # pdf.cell(200,35,txt=output_data,ln=10,align='J')
+    for x in app.pdfTextArray:
+        pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
+            
+    pdf.output("output.pdf")     
+    mb.showinfo("success","Save Pdf Successfully")
+
+def showConfirmDialog(event=None):
+    result = mb.askquestion('Exit Application', 'Do you really want to exit?') # mb = messagebox (import from tkinter)
+        
+    if(result == 'yes'):
+        root.destroy()
+    else:
+        return
+
 if __name__ == "__main__":
     import pandas as pd
     from tqdm import tqdm
@@ -389,167 +657,7 @@ if __name__ == "__main__":
     configs = BaseModelConfigs.load("Models/202301131202/configs.yaml")
 
     model = ImageToWordModel(model_path=configs.model_path, char_list=configs.vocab)
-
-# df = pd.read_csv("Models/04_sentence_recognition/202301131202/val.csv").values.tolist()
-
-    # accum_cer, accum_wer = [], []
-    # # for image_path, label in tqdm(df):
-    # image = cv2.imread(image_path)
-
-    # prediction_text = model.predict(image)
-
-    # print("Image: ", image_path)
-
-    # print("Prediction: ", prediction_text)
-
-    # cv2.imshow(prediction_text, image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    # test()
-    
-    # root = Tk()
-    
-    # root.title("Hand-writing Recognize")
-    # root.geometry('1080x720')
-    
-    # resultText = Text(root, height=22,width=80)
-    # resultText.configure(state=DISABLED, bg="white",fg="black",font=("Comic Sans MS",16))
-    # # resultText.grid(row=1, column=0, sticky=EW)
-    # resultText.pack(side=BOTTOM)
-    
-    # # create a scrollbar widget and set its command to the text widget
-    # scrollbar = Scrollbar(root, orient='vertical', command=resultText.yview)
-    # # scrollbar.grid(row=1, column=1, sticky=NS)
-
-    # #  communicate back to the scrollbar
-    # resultText['yscrollcommand'] = scrollbar.set
-    
-    # # top_left = Frame(root, bg='black', width=200, height=200)
-    # # top_left.grid(row=0)
-    
-    # # lb = Label(root,text= "")
-    # # lb.grid(column=0,row=1)
-    
-    # # lbImg = Label(root, image= "")
-    # # lbImg.grid(column=0,row=1)
-    
-    # # lbImg = Label(top_left, image= "")
-    # # lbImg.pack()
-    
-    def UploadAction(event=None):
-        image_path = filedialog.askopenfilename()
-        # print("Selected: ", filename)
-
-        # img = crop_text(image_path)
-        global img
-        img = cv2.imread(image_path)
-        # resizedImg = ImageResizer.resize_maintaining_aspect_ratio(img,1091,249)
-        app.showImg(img)
-
-    def cropImageAction():
-        global imgList
-        imgList = cropSentence()
-        # prediction = cropSentence(img)
-        
-        # showImg = ImageTk.PhotoImage(Image.open(image_path))
-    
-    def predictAction():
-        prediction = PredictionFormCropImg(imgList)
-        final_prediction = " "
-        while prediction:
-            if len(prediction) == 0:
-                break
-            final_prediction += prediction.pop() + ' '
-        # print(final_prediction)
-        # lb.configure(text = final_prediction)
-
-        # tool = language_tool_python.LanguageTool('en-US')
-        # matches = tool.check(final_prediction)
-        # print(len(matches))
-        # for i in matches:
-        #     print(i)
-        output_text = error_correct_pyspeller(final_prediction)
-        # print(output_text)
-
-        output_data = error_correcting(output_text)
-        # print(output_data)
-        # matches = tool.check(output_text)
-        # print(len(matches))
-        # for i in matches:
-        #     print(i)        
-        resultTextInputArray = wordSpliter(output_data)
-        # resultText.configure(state=NORMAL)
-        # resultText.insert(END,"\n".join(resultTextInputArray))
-        # resultText.configure(state=DISABLED)
-        app.ChangeText("\n".join(resultTextInputArray))
-        # lbImg.configure(image = showImg)
-        global pdfTextArray
-        
-        pdfTextArray = wordSpliter(output_data)
-    
-    # def clearResultText(event=None):
-    #     resultText.configure(state=NORMAL)
-    #     resultText.delete(1.0,END)
-    #     resultText.configure(state=DISABLED)
-        
-    # # Hàm lưu file pdf #   
-    def saveAsPdf(event=None):
-        
-        pdf = FPDF()
-  
-         #Add a page
-        pdf.add_page()
-
-         #set style and size of font 
-         #that you want in the pdf
-        pdf.set_font("Arial", size = 15)
-        
-        # pdf.cell(200,35,txt=output_data,ln=10,align='J')
-        for x in pdfTextArray:
-            pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
-            
-        pdf.output("output.pdf")     
-        mb.showinfo("success","Save Pdf Successfully")
-        
-    def showConfirmDialog(event=None):
-        result = mb.askquestion('Exit Application', 'Do you really want to exit?') # mb = messagebox (import from tkinter)
-        
-        if(result == 'yes'):
-            root.destroy()
-        else:
-            return
-
-    # # Create style Object
-  
  
-
- 
-    # # Changes will be reflected
-    # # by the movement of mouse.
-    # # click_btn= PhotoImage(file='D:\Study\Python\hand_writing\Images\click.png')
-    
-
-    # uploadBtn = Button(root, text="Choose file to upload",command=UploadAction)
-    # saveAsPdfBtn = Button(root, text="Save as PDF",command=saveAsPdf)
-    # clearResultTextBtn = Button(root, text="Clear Text",command=clearResultText)
-    # closeAppBtn = Button(root, text="Quit Application",command=showConfirmDialog)
-    
-    # uploadBtn.pack(side=LEFT)
-    # clearResultTextBtn.pack(side=LEFT)
-    # saveAsPdfBtn.pack(side=LEFT)
-    # closeAppBtn.pack(side=LEFT)
-    
-    
-    # # menu = Menu(root)
-    # # root.config(menu=menu)
-    # # filemenu = Menu(menu)
-    # # menu.add_cascade(label='File', menu=filemenu)
-    # # filemenu.add_command(label="Choose a file to upload", command=UploadAction)
-    
-    # root.mainloop()
-    
-    # cv2.waitKey(0)
-
     root = tk.Tk()
     app = App(root)
     root.mainloop()
