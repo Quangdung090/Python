@@ -311,6 +311,7 @@ class App:
         saveEditedTextBtn["activeforeground"] = "#fcfcfc"
         saveEditedTextBtn["bg"] = "#6bd425"
         saveEditedTextBtn["fg"] = "#ffffff"
+        saveEditedTextBtn["cursor"] = "hand2"
         ft = tkFont.Font(family='Times',size=14, weight="bold")
         saveEditedTextBtn["relief"]="ridge"
         saveEditedTextBtn["font"] = ft
@@ -326,6 +327,7 @@ class App:
         cancelEditedTextBtn["activeforeground"] = "#ffffff"
         cancelEditedTextBtn["bg"] = "#e9190f"
         cancelEditedTextBtn["fg"] = "#ffffff"
+        cancelEditedTextBtn["cursor"] = "hand2"
         ft = tkFont.Font(family='Times',size=14, weight="bold")
         cancelEditedTextBtn["relief"]="ridge"
         cancelEditedTextBtn["font"] = ft
@@ -456,7 +458,7 @@ class App:
         duDoanToanBoBtn.place_forget()
 
     def editTextBtn_command(self):
-        print("NGười dùng tự sửa thêm")
+        print("Người dùng tự sửa thêm")
         saveEditedTextBtn.place(x=20,y=20,width=150,height=45)
         cancelEditedTextBtn.place(x=200,y=20,width=150,height=45)
         resultText.configure(state="normal")
@@ -661,7 +663,7 @@ def saveAsPdf(event=None):
         pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
             
     pdf.output("output.pdf")     
-    mb.showinfo("success","Save Pdf Successfully")
+    mb.showinfo("Succeed!","Save as PDF Successfully!")
 
 def showConfirmDialog(event=None):
     result = mb.askquestion('Exit Application', 'Do you really want to exit?') # mb = messagebox (import from tkinter)
