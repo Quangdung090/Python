@@ -379,8 +379,6 @@ class App:
         output = resultText.get(1.0,END)
         if(output != "Your text goes here\n"):
             self.ChangeText("")
-            # Ẩn hết nút
-            self.resetDisplay()
 
     def clearImgBtn_command(self):
         print("clear Image")
