@@ -8,6 +8,7 @@ import tkinter.font as tkFont
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox as mb
+from tkinter import ttk
 from PIL import ImageTk, Image
 from fpdf import FPDF
 from pyaspeller import YandexSpeller
@@ -20,414 +21,464 @@ from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder, get_cer, get_wer
 from mltu.transformers import ImageResizer
 
+class HoverButton(tk.Button):
+    def __init__(self, master, bg="", hoverbg=""):
+        tk.Button.__init__(self,master=master,)
+        self.bg = bg
+        self.hoverbg = hoverbg
+        self.bind("<Enter>", self.on_enter)
+        self.bind("<Leave>", self.on_leave)
 
-class App:
+    def on_enter(self, e):
+        self['background'] = self.hoverbg
+
+    def on_leave(self, e):
+        self['background'] = self.bg
+
+class App:        
     
     def __init__(self, root):
         #setting title
         root.title("undefined")
         #setting window size
         width=1080
-        height=720
+        height=710
         screenwidth = root.winfo_screenwidth()
         screenheight = root.winfo_screenheight()
         alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
         root.geometry(alignstr)
+        root.title("Hand-writing recoginzer")
         root.resizable(width=False, height=False)
 
-        GButton_845=tk.Button(root)
-        GButton_845["activebackground"] = "#618B25"
-        GButton_845["activeforeground"] = "#fcfcfc"
-        GButton_845["bg"] = "#6bd425"
-        GButton_845["cursor"] = "arrow"
-        GButton_845["disabledforeground"] = "#ba8888"
-        ft = tkFont.Font(family='Times',size=12)
-        GButton_845["font"] = ft
-        GButton_845["fg"] = "#ffffff"
-        GButton_845["justify"] = "center"
-        GButton_845["text"] = "Choose file to upload"
-        GButton_845.place(x=20,y=20,width=150,height=45)
-        GButton_845["command"] = self.GButton_845_command
+        upLoadBtn=HoverButton(root,"#6bd425","#618B25")
+        upLoadBtn["activebackground"] = "#6bd425"
+        upLoadBtn["activeforeground"] = "#fcfcfc"
+        upLoadBtn["bg"] = "#6bd425"
+        upLoadBtn["cursor"] = "hand2"
+        upLoadBtn["disabledforeground"] = "#ba8888"
+        ft = tkFont.Font(family='Times',size=12, weight="bold")
+        upLoadBtn["relief"]="ridge"
+        upLoadBtn["font"] = ft
+        upLoadBtn["fg"] = "#eeeeee"
+        upLoadBtn["justify"] = "center"
+        upLoadBtn["text"] = "Choose file to upload"
+        upLoadBtn.place(x=20,y=20,width=150,height=45)
+        upLoadBtn["command"] = self.upLoadBtn_command
 
-        GButton_997=tk.Button(root)
-        GButton_997["activebackground"] = "#8c8b8b"
-        GButton_997["activeforeground"] = "#15ff4b"
-        GButton_997["bg"] = "#f0f7ee"
-        GButton_997["cursor"] = "arrow"
-        GButton_997["disabledforeground"] = "#9f8181"
-        ft = tkFont.Font(family='Times',size=12)
-        GButton_997["font"] = ft
-        GButton_997["fg"] = "#000000"
-        GButton_997["justify"] = "center"
-        GButton_997["text"] = "Clear text"
-        GButton_997.place(x=900,y=90,width=150,height=45)
-        GButton_997["command"] = self.GButton_997_command
+        clearTextBtn=HoverButton(root,"#f0f7ee","#8c8b8b")
+        clearTextBtn["activebackground"] = "#8c8b8b"
+        clearTextBtn["activeforeground"] = "#ffffff"
+        clearTextBtn["bg"] = "#f0f7ee"
+        clearTextBtn["relief"]="ridge"
+        clearTextBtn["cursor"] = "hand2"
+        clearTextBtn["disabledforeground"] = "#9f8181"
+        ft = tkFont.Font(family='Times',size=12, weight="bold")
+        clearTextBtn["font"] = ft
+        clearTextBtn["fg"] = "#000000"
+        clearTextBtn["justify"] = "center"
+        clearTextBtn["text"] = "Clear text"
+        clearTextBtn.place(x=900,y=90,width=150,height=45)
+        clearTextBtn["command"] = self.clearTextBtn_command
 
-        GButton_413=tk.Button(root)
-        GButton_413["activebackground"] = "#1F7A8C"
-        GButton_413["activeforeground"] = "#15ff4b"
-        GButton_413["bg"] = "#5bc0be"
-        GButton_413["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=12)
-        GButton_413["font"] = ft
-        GButton_413["fg"] = "#fffefe"
-        GButton_413["justify"] = "center"
-        GButton_413["text"] = "Save As Pdf"
-        GButton_413.place(x=200,y=20,width=150,height=45)
-        GButton_413["command"] = self.GButton_413_command
+        savePDFBtn=HoverButton(root, "#5bc0be", "#1F7A8C")
+        savePDFBtn["activebackground"] = "#5bc0be"
+        savePDFBtn["activeforeground"] = "#ffffff"
+        savePDFBtn["bg"] = "#5bc0be"
+        savePDFBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=12, weight="bold")
+        savePDFBtn["relief"]="ridge"
+        savePDFBtn["font"] = ft
+        savePDFBtn["fg"] = "#fffefe"
+        savePDFBtn["justify"] = "center"
+        savePDFBtn["text"] = "Save As Pdf"
+        savePDFBtn.place(x=200,y=20,width=150,height=45)
+        savePDFBtn["command"] = self.savePDFBtn_command
 
-        GButton_236=tk.Button(root)
-        GButton_236["activebackground"] = "#FB3640"
-        GButton_236["activeforeground"] = "#ffffff"
-        GButton_236["bg"] = "#e9190f"
-        GButton_236["cursor"] = "mouse"
-        ft = tkFont.Font(family='Times',size=14)
-        GButton_236["font"] = ft
-        GButton_236["fg"] = "#fefefe"
-        GButton_236["justify"] = "center"
-        GButton_236["text"] = "EXIT"
-        GButton_236["relief"] = "ridge"
-        GButton_236.place(x=900,y=20,width=150,height=45)
-        GButton_236["command"] = self.GButton_236_command
+        exitAppBtn=HoverButton(root, "#e9190f", "#FB3640")
+        exitAppBtn["activebackground"] = "#e9190f"
+        exitAppBtn["activeforeground"] = "#ffffff"
+        exitAppBtn["bg"] = "#e9190f"
+        exitAppBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        exitAppBtn["font"] = ft
+        exitAppBtn["fg"] = "#fefefe"
+        exitAppBtn["justify"] = "center"
+        exitAppBtn["text"] = "EXIT"
+        exitAppBtn["relief"] = "ridge"
+        exitAppBtn.place(x=900,y=20,width=150,height=45)
+        exitAppBtn["command"] = self.exitAppBtn_command
 
-        global GLabel_277
-        GLabel_277=tk.Label(root)
-        ft = tkFont.Font(family='Times',size=10)
-        GLabel_277["font"] = ft
-        GLabel_277["fg"] = "#333333"
-        GLabel_277["justify"] = "center"
-        GLabel_277["text"] = "Image"
-        GLabel_277.place(x=0,y=140,width=541,height=570)
+        global imageLabel
+        imageLabel=tk.Label(root)
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        imageLabel["font"] = ft
+        imageLabel["fg"] = "#333333"
+        imageLabel["justify"] = "center"
+        imageLabel["text"] = "Click on 'Choose file to upload' to put image here"
+        imageLabel.place(x=0,y=140,width=541,height=570)
 
-        global GMessage_172
+        global resultText
         Message=tk.Message(root)
-        ft = tkFont.Font(family='Times',size=10)
+        ft = tkFont.Font(family='Comic Sans MS', weight="bold",size=14)
         Message["font"] = ft
         Message["fg"] = "#333333"
         Message["justify"] = "center"
-        Message["text"] = "Title"
-        # GMessage_172.place(x=540,y=140,width=540,height=570)
-        GMessage_172 = tk.Text(root, background=Message.cget("background"), relief="flat",
-        borderwidth=0, font=Message.cget("font"), state="disabled",)
-        GMessage_172.configure(state="normal")
-        GMessage_172.insert(END,"title")
-        GMessage_172.configure(state="disabled")
-        GMessage_172.place(x=540,y=140,width=540,height=570)
+        Message["text"] = "Your text goes here"
+        # resultText.place(x=540,y=140,width=540,height=570)
+        resultText = tk.Text(root, background="white", relief="solid",
+        borderwidth=1,font=Message.cget("font"), state="disabled")
+        resultText.configure(state="normal")
+        resultText.insert(END,"Your text goes here")
+        resultText.configure(state="disabled")
+        resultText.place(x=540,y=140,width=540,height=570)
         Message.destroy()
 
 
-        global GButton_788
-        GButton_788=tk.Button(root)
-        GButton_788["activebackground"] = "#618B25"
-        GButton_788["bg"] = "#6bd425"
-        ft = tkFont.Font(family='Times',size=12)
-        GButton_788["font"] = ft
-        GButton_788["fg"] = "#ffffff"
-        GButton_788["justify"] = "center"
-        GButton_788["text"] = "Cắt ảnh"
-        GButton_788.place(x=20,y=20,width=150,height=45)
-        GButton_788["command"] = self.GButton_788_command
-        GButton_788.place_forget()
-
-        GButton_470=tk.Button(root)
-        GButton_470["activebackground"] = "#8c8b8b"
-        GButton_470["activeforeground"] = "#15ff4b"
-        GButton_470["bg"] = "#f0f7ee"
-        GButton_470["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=12)
-        GButton_470["font"] = ft
-        GButton_470["fg"] = "#000000"
-        GButton_470["justify"] = "center"
-        GButton_470["text"] = "Clear Image"
-        GButton_470.place(x=20,y=90,width=150,height=45)
-        GButton_470["command"] = self.GButton_470_command
-
-        global GButton_656
-        GButton_656=tk.Button(root)
-        GButton_656["activebackground"] = "#618B25"
-        GButton_656["activeforeground"] = "#fcfcfe"
-        GButton_656["bg"] = "#6bd425"
-        GButton_656["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_656["font"] = ft
-        GButton_656["fg"] = "#ffffff"
-        GButton_656["justify"] = "center"
-        GButton_656["text"] = "Từng bước cắt ảnh \n(bước 1 làm xám ảnh)"
-        GButton_656.place(x=20,y=20,width=150,height=45)
-        GButton_656["command"] = self.GButton_656_command
-        GButton_656.place_forget()
+        global catAnhBtn
+        catAnhBtn=HoverButton(root,"#6bd425","#618B25")
+        catAnhBtn["activebackground"] = "#6bd425"
+        catAnhBtn["bg"] = "#6bd425"
+        ft = tkFont.Font(family='Times',size=12, weight="bold")
+        catAnhBtn['cursor'] = "hand2"
+        catAnhBtn["font"] = ft
+        catAnhBtn["relief"]="ridge"
+        catAnhBtn["fg"] = "#ffffff"
+        catAnhBtn["justify"] = "center"
+        catAnhBtn["text"] = "Cắt ảnh"
+        catAnhBtn.place(x=20,y=20,width=150,height=45)
+        catAnhBtn["command"] = self.catAnhBtn_command
+        catAnhBtn.place_forget()
         
-        global GButton_63
-        GButton_63=tk.Button(root)
-        GButton_63["activebackground"] = "#1F7A8C"
-        GButton_63["activeforeground"] = "#15ff4b"
-        GButton_63["bg"] = "#5bc0be"
-        ft = tkFont.Font(family='Times',size=12)
-        GButton_63["font"] = ft
-        GButton_63["fg"] = "#ffffff"
-        GButton_63["justify"] = "center"
-        GButton_63["text"] = "Dự đoán chữ"
-        GButton_63.place(x=200,y=20,width=150,height=45)
-        GButton_63["command"] = self.GButton_63_command
-        GButton_63.place_forget()
+        clearImgBtn=HoverButton(root,"#f0f7ee","#8c8b8b")
+        clearImgBtn["activebackground"] = "#8c8b8b"
+        clearImgBtn["activeforeground"] = "#ffffff"
+        clearImgBtn["bg"] = "#f0f7ee"
+        clearImgBtn["relief"]="ridge"
+        clearImgBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=12, weight="bold")
+        clearImgBtn["font"] = ft
+        clearImgBtn["fg"] = "#000000"
+        clearImgBtn["justify"] = "center"
+        clearImgBtn["text"] = "Clear Image"
+        clearImgBtn.place(x=20,y=90,width=150,height=45)
+        clearImgBtn["command"] = self.clearImgBtn_command
 
-        global GButton_29
-        GButton_29=tk.Button(root)
-        GButton_29["bg"] = "#f0f0f0"
-        GButton_29["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_29["font"] = ft
-        GButton_29["fg"] = "#000000"
-        GButton_29["justify"] = "center"
-        GButton_29["text"] = "B2 Tô Chữ"
-        GButton_29.place(x=20,y=20,width=150,height=45)
-        GButton_29["command"] = self.GButton_29_command
-        GButton_29.place_forget()
+        global lamXamAnhBtn
+        lamXamAnhBtn=HoverButton(root,"#6bd425","#618B25")
+        lamXamAnhBtn["activebackground"] = "#618B25"
+        lamXamAnhBtn["activeforeground"] = "#fcfcfe"
+        lamXamAnhBtn["bg"] = "#6bd425"
+        lamXamAnhBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=10, weight="bold")
+        lamXamAnhBtn["font"] = ft
+        lamXamAnhBtn["fg"] = "#ffffff"
+        lamXamAnhBtn["relief"]="ridge"
+        lamXamAnhBtn["justify"] = "center"
+        lamXamAnhBtn["text"] = "Từng bước cắt ảnh \n(bước 1 làm xám ảnh)"
+        lamXamAnhBtn.place(x=20,y=20,width=150,height=45)
+        lamXamAnhBtn["command"] = self.lamXamAnhBtn_command
+        lamXamAnhBtn.place_forget()
+        
+        global duDoanChuBtn
+        duDoanChuBtn=HoverButton(root,"#5bc0be","#1F7A8C")
+        duDoanChuBtn["activebackground"] = "#5bc0be"
+        duDoanChuBtn["activeforeground"] = "#ffffff"
+        duDoanChuBtn["bg"] = "#5bc0be"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        duDoanChuBtn["font"] = ft
+        duDoanChuBtn["relief"]="ridge"
+        duDoanChuBtn["fg"] = "#ffffff"
+        duDoanChuBtn["justify"] = "center"
+        duDoanChuBtn["text"] = "Dự đoán chữ"
+        duDoanChuBtn.place(x=200,y=20,width=150,height=45)
+        duDoanChuBtn["command"] = self.duDoanChuBtn_command
+        duDoanChuBtn.place_forget()
 
-        global GButton_894
-        GButton_894=tk.Button(root)
-        GButton_894["bg"] = "#f0f0f0"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_894["font"] = ft
-        GButton_894["fg"] = "#000000"
-        GButton_894["justify"] = "center"
-        GButton_894["text"] = "B3 Đóng khung"
-        GButton_894.place(x=20,y=20,width=150,height=45)
-        GButton_894["command"] = self.GButton_894_command
-        GButton_894.place_forget()
+        global toChuBtn
+        toChuBtn=HoverButton(root,"#6bd425","#618B25")
+        toChuBtn["activebackground"] = "#6bd425"
+        toChuBtn["activeforeground"] = "#fcfcfc"
+        toChuBtn["bg"] = "#6bd425"
+        toChuBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        toChuBtn["relief"]="ridge"
+        toChuBtn["font"] = ft
+        toChuBtn["fg"] = "#ffffff"
+        toChuBtn["justify"] = "center"
+        toChuBtn["text"] = "B2 Tô Chữ"
+        toChuBtn.place(x=20,y=20,width=150,height=45)
+        toChuBtn["command"] = self.toChuBtn_command
+        toChuBtn.place_forget()
 
-        global GButton_249
-        GButton_249=tk.Button(root)
-        GButton_249["bg"] = "#f0f0f0"
-        GButton_249["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_249["font"] = ft
-        GButton_249["fg"] = "#000000"
-        GButton_249["justify"] = "center"
-        GButton_249["text"] = "Dự đoán từng câu"
-        GButton_249.place(x=20,y=20,width=150,height=45)
-        GButton_249["command"] = self.GButton_249_command
-        GButton_249.place_forget()
+        global dongKhungBtn
+        dongKhungBtn=HoverButton(root,"#6bd425","#618B25")
+        dongKhungBtn["activebackground"] = "#6bd425"
+        dongKhungBtn["activeforeground"] = "#fcfcfc"
+        dongKhungBtn["bg"] = "#6bd425"
+        dongKhungBtn["fg"] = "#ffffff"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        dongKhungBtn["relief"]="ridge"
+        dongKhungBtn["font"] = ft
+        dongKhungBtn["justify"] = "center"
+        dongKhungBtn["text"] = "B3 Đóng khung"
+        dongKhungBtn.place(x=20,y=20,width=150,height=45)
+        dongKhungBtn["command"] = self.dongKhungBtn_command
+        dongKhungBtn.place_forget()
 
-        global GButton_385
-        GButton_385=tk.Button(root)
-        GButton_385["bg"] = "#f0f0f0"
-        GButton_385["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_385["font"] = ft
-        GButton_385["fg"] = "#000000"
-        GButton_385["justify"] = "center"
-        GButton_385["text"] = "Dự Đoán Toàn Bộ"
-        GButton_385.place(x=200,y=20,width=150,height=45)
-        GButton_385["command"] = self.GButton_385_command
-        GButton_385.place_forget()
+        global duDoanTungcauBtn
+        duDoanTungcauBtn=HoverButton(root,"#6bd425","#618B25")
+        duDoanTungcauBtn["activebackground"] = "#6bd425"
+        duDoanTungcauBtn["activeforeground"] = "#fcfcfc"
+        duDoanTungcauBtn["bg"] = "#6bd425"
+        duDoanTungcauBtn["fg"] = "#ffffff"
+        duDoanTungcauBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        duDoanTungcauBtn["relief"]="ridge"
+        duDoanTungcauBtn["font"] = ft
+        duDoanTungcauBtn["justify"] = "center"
+        duDoanTungcauBtn["text"] = "Dự đoán từng câu"
+        duDoanTungcauBtn.place(x=20,y=20,width=150,height=45)
+        duDoanTungcauBtn["command"] = self.duDoanTungcauBtn_command
+        duDoanTungcauBtn.place_forget()
 
-        global GButton_241
-        GButton_241=tk.Button(root)
-        GButton_241["bg"] = "#f0f0f0"
-        GButton_241["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_241["font"] = ft
-        GButton_241["fg"] = "#000000"
-        GButton_241["justify"] = "center"
-        GButton_241["text"] = "Hiển Thị lỗi"
-        GButton_241.place(x=20,y=20,width=150,height=45)
-        GButton_241["command"] = self.GButton_241_command
-        GButton_241.place_forget()
+        global duDoanToanBoBtn
+        duDoanToanBoBtn=HoverButton(root,"#5bc0be","#1F7A8C")
+        duDoanToanBoBtn["activebackground"] = "#5bc0be"
+        duDoanToanBoBtn["activeforeground"] = "#ffffff"
+        duDoanToanBoBtn["bg"] = "#5bc0be"
+        duDoanToanBoBtn["fg"] = "#fffefe"
+        duDoanToanBoBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        duDoanToanBoBtn["relief"]="ridge"
+        duDoanToanBoBtn["font"] = ft
+        duDoanToanBoBtn["justify"] = "center"
+        duDoanToanBoBtn["text"] = "Dự Đoán Toàn Bộ"
+        duDoanToanBoBtn.place(x=200,y=20,width=150,height=45)
+        duDoanToanBoBtn["command"] = self.duDoanToanBoBtn_command
+        duDoanToanBoBtn.place_forget()
 
-        global GButton_120
-        GButton_120=tk.Button(root)
-        GButton_120["bg"] = "#f0f0f0"
-        GButton_120["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_120["font"] = ft
-        GButton_120["fg"] = "#000000"
-        GButton_120["justify"] = "center"
-        GButton_120["text"] = "Sửa Lỗi"
-        GButton_120.place(x=200,y=20,width=150,height=45)
-        GButton_120["command"] = self.GButton_120_command
-        GButton_120.place_forget()
+        global showErorrBtn
+        showErorrBtn=HoverButton(root,"#6bd425","#618B25")
+        showErorrBtn["activebackground"] = "#6bd425"
+        showErorrBtn["activeforeground"] = "#fcfcfc"
+        showErorrBtn["bg"] = "#6bd425"
+        showErorrBtn["fg"] = "#ffffff"
+        showErorrBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        showErorrBtn["relief"]="ridge"
+        showErorrBtn["font"] = ft
+        showErorrBtn["justify"] = "center"
+        showErorrBtn["text"] = "Hiển Thị lỗi"
+        showErorrBtn.place(x=20,y=20,width=150,height=45)
+        showErorrBtn["command"] = self.showErorrBtn_command
+        showErorrBtn.place_forget()
 
-        global GButton_128
-        GButton_128=tk.Button(root)
-        GButton_128["bg"] = "#f0f0f0"
-        GButton_128["cursor"] = "arrow"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_128["font"] = ft
-        GButton_128["fg"] = "#000000"
-        GButton_128["justify"] = "center"
-        GButton_128["text"] = "Tự chỉnh sửa thêm"
-        GButton_128.place(x=20,y=20,width=150,height=45)
-        GButton_128["command"] = self.GButton_128_command
-        GButton_128.place_forget()
+        global fixErrorBtn
+        fixErrorBtn=HoverButton(root,"#5bc0be","#1F7A8C")
+        fixErrorBtn["activebackground"] = "#5bc0be"
+        fixErrorBtn["activeforeground"] = "#ffffff"
+        fixErrorBtn["bg"] = "#5bc0be"
+        fixErrorBtn["fg"] = "#fffefe"
+        fixErrorBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        fixErrorBtn["relief"]="ridge"
+        fixErrorBtn["font"] = ft
+        fixErrorBtn["justify"] = "center"
+        fixErrorBtn["text"] = "Sửa Lỗi"
+        fixErrorBtn.place(x=200,y=20,width=150,height=45)
+        fixErrorBtn["command"] = self.fixErrorBtn_command
+        fixErrorBtn.place_forget()
 
-        global GButton_695
-        GButton_695=tk.Button(root)
-        GButton_695["bg"] = "#f0f0f0"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_695["font"] = ft
-        GButton_695["fg"] = "#000000"
-        GButton_695["justify"] = "center"
-        GButton_695["text"] = "Lưu"
-        GButton_695.place(x=20,y=20,width=150,height=45)
-        GButton_695["command"] = self.GButton_695_command
-        GButton_695.place_forget()
+        global editTextBtn
+        editTextBtn=HoverButton(root,"#6bd425","#618B25")
+        editTextBtn["activebackground"] = "#6bd425"
+        editTextBtn["activeforeground"] = "#fcfcfc"
+        editTextBtn["bg"] = "#6bd425"
+        editTextBtn["fg"] = "#ffffff"
+        editTextBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        editTextBtn["relief"]="ridge"
+        editTextBtn["font"] = ft
+        editTextBtn["justify"] = "center"
+        editTextBtn["text"] = "Tự chỉnh sửa thêm"
+        editTextBtn.place(x=20,y=20,width=150,height=45)
+        editTextBtn["command"] = self.editTextBtn_command
+        editTextBtn.place_forget()
 
-        global GButton_391
-        GButton_391=tk.Button(root)
-        GButton_391["bg"] = "#f0f0f0"
-        ft = tkFont.Font(family='Times',size=10)
-        GButton_391["font"] = ft
-        GButton_391["fg"] = "#000000"
-        GButton_391["justify"] = "center"
-        GButton_391["text"] = "Hủy"
-        GButton_391.place(x=200,y=20,width=150,height=45)
-        GButton_391["command"] = self.GButton_391_command
-        GButton_391.place_forget()
+        global saveEditedTextBtn
+        saveEditedTextBtn=HoverButton(root,"#6bd425","#618B25")
+        saveEditedTextBtn["activebackground"] = "#6bd425"
+        saveEditedTextBtn["activeforeground"] = "#fcfcfc"
+        saveEditedTextBtn["bg"] = "#6bd425"
+        saveEditedTextBtn["fg"] = "#ffffff"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        saveEditedTextBtn["relief"]="ridge"
+        saveEditedTextBtn["font"] = ft
+        saveEditedTextBtn["justify"] = "center"
+        saveEditedTextBtn["text"] = "Lưu"
+        saveEditedTextBtn.place(x=20,y=20,width=150,height=45)
+        saveEditedTextBtn["command"] = self.saveEditedTextBtn_command
+        saveEditedTextBtn.place_forget()
+
+        global cancelEditedTextBtn
+        cancelEditedTextBtn=HoverButton(root,"#e9190f","#FB3640")
+        cancelEditedTextBtn["activebackground"] = "#e9190f"
+        cancelEditedTextBtn["activeforeground"] = "#ffffff"
+        cancelEditedTextBtn["bg"] = "#e9190f"
+        cancelEditedTextBtn["fg"] = "#ffffff"
+        ft = tkFont.Font(family='Times',size=14, weight="bold")
+        cancelEditedTextBtn["relief"]="ridge"
+        cancelEditedTextBtn["font"] = ft
+        cancelEditedTextBtn["justify"] = "center"
+        cancelEditedTextBtn["text"] = "Hủy"
+        cancelEditedTextBtn.place(x=200,y=20,width=150,height=45)
+        cancelEditedTextBtn["command"] = self.cancelEditedTextBtn_command
+        cancelEditedTextBtn.place_forget()
+    
 
     def ChangeText(self,changeText):
-        GMessage_172.configure(state="normal")
-        GMessage_172.delete(1.0,END)
-        GMessage_172.insert(END,changeText)
-        GMessage_172.configure(state="disabled")
+        resultText.configure(state="normal")
+        resultText.delete(1.0,END)
+        resultText.insert(END,changeText)
+        resultText.configure(state="disabled")
 
     def showImg(self,inputImage):
-        displayImg = ImageResizer.resize_maintaining_aspect_ratio(inputImage,GLabel_277.winfo_width(),GLabel_277.winfo_height())
+        displayImg = ImageResizer.resize_maintaining_aspect_ratio(inputImage,imageLabel.winfo_width(),imageLabel.winfo_height())
         im = Image.fromarray(displayImg)
         imtk = ImageTk.PhotoImage(im)
-        GLabel_277.configure(image=imtk)
-        GLabel_277.image = imtk
+        imageLabel.configure(image=imtk)
+        imageLabel.image = imtk
 
     def resetDisplay(self):
-        GButton_788.place_forget()
-        GButton_63.place_forget()
-        GButton_656.place_forget()
-        GButton_29.place_forget()
-        GButton_894.place_forget()
-        GButton_249.place_forget()
-        GButton_385.place_forget()
-        GButton_120.place_forget()
-        GButton_241.place_forget()
-        GButton_128.place_forget()
-        GButton_695.place_forget()
-        GButton_391.place_forget()
-        GMessage_172.configure(state="disabled")
+        catAnhBtn.place_forget()
+        duDoanChuBtn.place_forget()
+        lamXamAnhBtn.place_forget()
+        toChuBtn.place_forget()
+        dongKhungBtn.place_forget()
+        duDoanTungcauBtn.place_forget()
+        duDoanToanBoBtn.place_forget()
+        fixErrorBtn.place_forget()
+        showErorrBtn.place_forget()
+        editTextBtn.place_forget()
+        saveEditedTextBtn.place_forget()
+        cancelEditedTextBtn.place_forget()
+        resultText.configure(state="disabled")
 
 
 
-    def GButton_845_command(self):
+    def upLoadBtn_command(self):
         print("Choose file to upload")
         # self.ChangeText("Loading...")
         UploadAction()
-        GButton_788.place(x=20,y=20,width=150,height=45)     
+        catAnhBtn.place(x=20,y=20,width=150,height=45)     
 
-    def GButton_997_command(self):
+    def clearTextBtn_command(self):
         print("clear Text")
-        self.ChangeText("")
-        # Ẩn hết nút
-        self.resetDisplay()
+        output = resultText.get(1.0,END)
+        if(output != "Your text goes here\n"):
+            self.ChangeText("")
+            # Ẩn hết nút
+            self.resetDisplay()
 
-
-
-    def GButton_470_command(self):
+    def clearImgBtn_command(self):
         print("clear Image")
-        GLabel_277.configure(image="")
+        imageLabel.configure(image="")
         # Ẩn hết nút
         self.resetDisplay()
 
 
-    def GButton_413_command(self):
+    def savePDFBtn_command(self):
         print("Save as pdf")
         saveAsPdf()
 
 
-    def GButton_236_command(self):
+    def exitAppBtn_command(self):
         print("quit")
         showConfirmDialog()
 
 
-    def GButton_788_command(self):
+    def catAnhBtn_command(self):
         print("Cắt ảnh")
         cropImageAction()
-        GButton_656.place(x=20,y=20,width=150,height=45)
-        GButton_63.place(x=200,y=20,width=150,height=45)
+        lamXamAnhBtn.place(x=20,y=20,width=150,height=45)
+        duDoanChuBtn.place(x=200,y=20,width=150,height=45)
 
-    def GButton_656_command(self):
+    def lamXamAnhBtn_command(self):
         print("Cắt ảnh b1")
         imgGrayAction()
-        GButton_29.place(x=20,y=20,width=150,height=45)
+        toChuBtn.place(x=20,y=20,width=150,height=45)
 
 
-    def GButton_63_command(self):
+    def duDoanChuBtn_command(self):
         print("dự đoán")
         self.final_predict = ""
-        GButton_249.place(x=20,y=20,width=150,height=45)
-        GButton_385.place(x=200,y=20,width=150,height=45)
+        duDoanTungcauBtn.place(x=20,y=20,width=150,height=45)
+        duDoanToanBoBtn.place(x=200,y=20,width=150,height=45)
         app.showImg(boxImg)
         # predictAction()
-        # GButton_63.place_forget()
+        # duDoanChuBtn.place_forget()
 
-    def GButton_29_command(self):
+    def toChuBtn_command(self):
         print("Tô chữ")
         colorTextAction()
-        GButton_894.place(x=20,y=20,width=150,height=45)
+        dongKhungBtn.place(x=20,y=20,width=150,height=45)
 
-    def GButton_894_command(self):
+    def dongKhungBtn_command(self):
         print("Đóng khung")
         boxesImgAction()
-        GButton_894.place_forget()
-        GButton_29.place_forget()
+        dongKhungBtn.place_forget()
+        toChuBtn.place_forget()
 
-    def GButton_249_command(self):
+    def duDoanTungcauBtn_command(self):
         print("Dự đoán từng câu")
         PredictLineAction()
 
 
-    def GButton_385_command(self):
+    def duDoanToanBoBtn_command(self):
         print("Dự đoán toàn bộ")
         PredictAllAction()
-        GButton_241.place(x=20,y=20,width=150,height=45)
-        GButton_120.place(x=200,y=20,width=150,height=45)
+        showErorrBtn.place(x=20,y=20,width=150,height=45)
+        fixErrorBtn.place(x=200,y=20,width=150,height=45)
 
-    def GButton_241_command(self):
+    def showErorrBtn_command(self):
         print("Hiển thị lỗi")
         showErrorAction()
 
 
-    def GButton_120_command(self):
+    def fixErrorBtn_command(self):
         print("Sửa Lỗi")
         self.pdfTextArray = []
         self.result_txt =""
         fixErrorAction()
-        GButton_128.place(x=20,y=20,width=150,height=45)
-        GButton_63.place_forget()
-        GButton_120.place_forget()
-        GButton_385.place_forget()
+        editTextBtn.place(x=20,y=20,width=150,height=45)
+        duDoanChuBtn.place_forget()
+        fixErrorBtn.place_forget()
+        duDoanToanBoBtn.place_forget()
 
-    def GButton_128_command(self):
+    def editTextBtn_command(self):
         print("NGười dùng tự sửa thêm")
-        GButton_695.place(x=20,y=20,width=150,height=45)
-        GButton_391.place(x=200,y=20,width=150,height=45)
-        GMessage_172.configure(state="normal")
+        saveEditedTextBtn.place(x=20,y=20,width=150,height=45)
+        cancelEditedTextBtn.place(x=200,y=20,width=150,height=45)
+        resultText.configure(state="normal")
 
 
-    def GButton_695_command(self):
+    def saveEditedTextBtn_command(self):
         print("Lưu")
-        newOutput = GMessage_172.get(1.0,END)
+        newOutput = resultText.get(1.0,END)
         outputArr = newOutput.split('\n')
         self.pdfTextArray = outputArr
         self.result_txt = newOutput
-        GButton_695.place_forget()
-        GButton_391.place_forget()
-        GMessage_172.configure(state="disabled")
+        saveEditedTextBtn.place_forget()
+        cancelEditedTextBtn.place_forget()
+        resultText.configure(state="disabled")
 
 
-    def GButton_391_command(self):
+    def cancelEditedTextBtn_command(self):
         print("Hủy")
         self.ChangeText(self.result_txt)
-        GButton_695.place_forget()
-        GButton_391.place_forget()
-        GMessage_172.configure(state="disabled")
+        saveEditedTextBtn.place_forget()
+        cancelEditedTextBtn.place_forget()
+        resultText.configure(state="disabled")
         
         
         
@@ -515,8 +566,8 @@ def cropSentence():
     # cv2.imshow("",bboxes_img)
     # im = Image.fromarray(bboxes_img)
     # imtk = ImageTk.PhotoImage(im)
-    # GLabel_277.configure(image=imtk)
-    # GLabel_277.image = imtk
+    # imageLabel.configure(image=imtk)
+    # imageLabel.image = imtk
     app.showImg(bboxes_img)
     boxImg = bboxes_img
     return imgList
@@ -526,24 +577,24 @@ def error_correcting(text):
     datasets = tool.correct(text)
     return datasets
 
-def wordSpliter(str,n=12):
+def wordSpliter(str,n=10):
     pieces = str.split()
     return (" ".join(pieces[i:i+n]) for i in range(0, len(pieces), n))
 
 def PredictLineAction():
     if(len(imgList) <= 0):
-        app.GButton_385_command()
+        app.duDoanToanBoBtn_command()
         return
     currImg = imgList.pop()
     app.showImg(currImg)
-    app.ChangeText("waitting...")
+    app.ChangeText("waiting...")
     waithere(100)
     predictText = model.predict(currImg)
     app.ChangeText(predictText)
     app.final_predict = app.final_predict + " " + predictText
 
 def PredictAllAction():
-    app.ChangeText("waitting...")
+    app.ChangeText("waiting...")
     waithere(100)
     while len(imgList) >0:
         currImg = imgList.pop()
@@ -554,7 +605,7 @@ def PredictAllAction():
     app.ChangeText("\n".join(ShowResult))
 
 def showErrorAction():
-    app.ChangeText("waitting...")
+    app.ChangeText("waiting...")
     waithere(100)
     print("start checking")
     tool = language_tool_python.LanguageTool('en-US')
@@ -570,7 +621,7 @@ def showErrorAction():
 
 
 def fixErrorAction():
-    app.ChangeText("waitting...")
+    app.ChangeText("waiting...")
     waithere(100)
     print("start fixing")
     # output_text = error_correct_pyspeller(app.final_predict)
