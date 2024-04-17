@@ -292,24 +292,13 @@ class App:
         GMessage_172.configure(state="disabled")
 
     def showImg(self,inputImage):
-        displayImg = ImageResizer.resize_maintaining_aspect_ratio(inputImage,541,570)
+        displayImg = ImageResizer.resize_maintaining_aspect_ratio(inputImage,GLabel_277.winfo_width(),GLabel_277.winfo_height())
         im = Image.fromarray(displayImg)
         imtk = ImageTk.PhotoImage(im)
         GLabel_277.configure(image=imtk)
         GLabel_277.image = imtk
 
-    def GButton_845_command(self):
-        print("Choose file to upload")
-        # self.ChangeText("Loading...")
-        UploadAction()
-        GButton_788.place(x=20,y=20,width=150,height=45)
-        
-     
-
-    def GButton_997_command(self):
-        print("clear Text")
-        self.ChangeText("")
-        # Ẩn hết nút
+    def resetDisplay(self):
         GButton_788.place_forget()
         GButton_63.place_forget()
         GButton_656.place_forget()
@@ -322,24 +311,29 @@ class App:
         GButton_128.place_forget()
         GButton_695.place_forget()
         GButton_391.place_forget()
+        GMessage_172.configure(state="disabled")
+
+
+
+    def GButton_845_command(self):
+        print("Choose file to upload")
+        # self.ChangeText("Loading...")
+        UploadAction()
+        GButton_788.place(x=20,y=20,width=150,height=45)     
+
+    def GButton_997_command(self):
+        print("clear Text")
+        self.ChangeText("")
+        # Ẩn hết nút
+        self.resetDisplay()
+
 
 
     def GButton_470_command(self):
         print("clear Image")
         GLabel_277.configure(image="")
         # Ẩn hết nút
-        GButton_788.place_forget()
-        GButton_63.place_forget()
-        GButton_656.place_forget()
-        GButton_29.place_forget()
-        GButton_894.place_forget()
-        GButton_249.place_forget()
-        GButton_385.place_forget()
-        GButton_120.place_forget()
-        GButton_241.place_forget()
-        GButton_128.place_forget()
-        GButton_695.place_forget()
-        GButton_391.place_forget()
+        self.resetDisplay()
 
 
     def GButton_413_command(self):
@@ -403,6 +397,7 @@ class App:
     def GButton_120_command(self):
         print("Sửa Lỗi")
         self.pdfTextArray = []
+        self.result_txt =""
         fixErrorAction()
         GButton_128.place(x=20,y=20,width=150,height=45)
         GButton_63.place_forget()
@@ -421,6 +416,7 @@ class App:
         newOutput = GMessage_172.get(1.0,END)
         outputArr = newOutput.split('\n')
         self.pdfTextArray = outputArr
+        self.result_txt = newOutput
         GButton_695.place_forget()
         GButton_391.place_forget()
         GMessage_172.configure(state="disabled")
@@ -428,6 +424,7 @@ class App:
 
     def GButton_391_command(self):
         print("Hủy")
+        self.ChangeText(self.result_txt)
         GButton_695.place_forget()
         GButton_391.place_forget()
         GMessage_172.configure(state="disabled")
@@ -524,37 +521,10 @@ def cropSentence():
     boxImg = bboxes_img
     return imgList
 
-# def PredictionFormCropImg(Imglist):
-#     prediction = []
-#     for i in Imglist:
-#         prediction_text = model.predict(i)
-#         prediction.append(prediction_text)
-#     return prediction
-
-# def crop_text(img_path):
-#     img = cv2.imread(img_path)
-#   # Read in the image and convert to grayscale
-#     img = img[:-20, :-20]  # Perform pre-cropping
-#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-#     gray = 255*(gray < 50).astype(np.uint8)  # To invert the text to white
-#     gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, np.ones(
-#     (2, 2), dtype=np.uint8))  # Perform noise filtering
-#     coords = cv2.findNonZero(gray)  # Find all non-zero points (text)
-#     x, y, w, h = cv2.boundingRect(coords)  # Find minimum spanning bounding box
-#     # Crop the image - note we do this on the original image
-#     rect = img[y-2:y+h-4, x:x+w]
-#     return rect
-
-
 def error_correcting(text):
     tool = language_tool_python.LanguageTool('en-US')
     datasets = tool.correct(text)
     return datasets
-
-def error_correct_pyspeller(sample_text):
-    speller = YandexSpeller()
-    fixed = speller.spelled(sample_text)
-    return fixed
 
 def wordSpliter(str,n=12):
     pieces = str.split()
@@ -609,7 +579,8 @@ def fixErrorAction():
     output_data = error_correcting(app.final_predict)
     result = wordSpliter(output_data)
     app.pdfTextArray = wordSpliter(output_data)
-    app.ChangeText("\n".join(result))
+    app.result_txt = "\n".join(result)
+    app.ChangeText(app.result_txt)
 
 def UploadAction(event=None):
     image_path = filedialog.askopenfilename()
