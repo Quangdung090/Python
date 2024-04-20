@@ -370,7 +370,7 @@ class App:
 
     def upLoadBtn_command(self):
         print("Choose file to upload")
-        # self.ChangeText("Loading...")
+        self.ChangeText("Loading...")
         UploadAction()
         catAnhBtn.place(x=20,y=20,width=150,height=45)     
 
@@ -479,9 +479,7 @@ class App:
         saveEditedTextBtn.place_forget()
         cancelEditedTextBtn.place_forget()
         resultText.configure(state="disabled")
-        
-        
-        
+
 
 class ImageToWordModel(OnnxInferenceModel):
     def __init__(self, char_list: typing.Union[str, list], *args, **kwargs):
@@ -683,3 +681,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
     root.mainloop()
+
+from GUI import gui
