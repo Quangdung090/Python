@@ -13,6 +13,10 @@ from PIL import ImageTk, Image
 from fpdf import FPDF
 from pyaspeller import YandexSpeller
 from tkinter.ttk import *
+import os
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
 # from App import App
 
 
@@ -336,8 +340,94 @@ class App:
         cancelEditedTextBtn.place(x=200,y=20,width=150,height=45)
         cancelEditedTextBtn["command"] = self.cancelEditedTextBtn_command
         cancelEditedTextBtn.place_forget()
+        
+        # Nut All Images
+        allImagesBtn = HoverButton(root, "#ccc", "#000")
+        allImagesBtn["activebackground"] = "#ccc"
+        allImagesBtn["activeforeground"] = "#ffffff"
+        allImagesBtn["bg"] = "#ccc"
+        allImagesBtn["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times', size=14, weight="bold")
+        allImagesBtn["relief"] = "ridge"
+        allImagesBtn["font"] = ft
+        allImagesBtn["fg"] = "#fffefe"
+        allImagesBtn["justify"] = "center"
+        allImagesBtn["text"] = "All Images"
+        allImagesBtn.place(x=380, y=20, width=150, height=45)
+        allImagesBtn["command"] = self.show_all_images
+        self.image_path = None  # Khởi tạo image_path là None
     
+    # ===================
+    
+        
+    def show_all_images(self):
+        
+        def upload_image(event,image_path,selected_image=True):
+            # image_path = event.widget.image_path
+            UploadAction(event,image_path,selected_image)
+        # Tạo cửa sổ mới để hiển thị ảnh
+        image_window = tk.Toplevel(root)
+        image_window.title("Tất cả Ảnh")
 
+        # Tạo một Canvas để chứa ảnh và kết nối nó với thanh Scrollbar
+        canvas = tk.Canvas(image_window)
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # Tạo thanh Scrollbar
+        scrollbar = tk.Scrollbar(image_window, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        # Liên kết thanh Scrollbar với Canvas
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Tạo một frame để chứa các widget Label hiển thị ảnh
+        image_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=image_frame, anchor="nw")
+
+        # Đường dẫn đến thư mục chứa ảnh
+        image_folder = "Images"  # Thay đổi thành đường dẫn của thư mục ảnh của bạn
+
+        # Duyệt qua tất cả các tệp trong thư mục ảnh và hiển thị chúng
+        for filename in os.listdir(image_folder):
+            filepath = os.path.join(image_folder, filename)
+            if os.path.isfile(filepath):
+                try:
+                    # Mở ảnh bằng thư viện PIL
+                    img = Image.open(filepath)
+                    # Resize ảnh nếu cần thiết
+                    img.thumbnail((350, 350))
+                    # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
+                    img = ImageTk.PhotoImage(img)
+                    # Tạo một widget Label để hiển thị ảnh
+                    img_label = tk.Label(image_frame, image=img)
+                    img_label.image = img  # Giữ tham chiếu đến ảnh để tránh bị thu gom bởi Python
+                    img_label.image_path = filepath  # Đặt đường dẫn của ảnh cho thuộc tính image_path
+                    img_label.pack(padx=5, pady=5)
+                    
+                    # Gắn sự kiện chuột click vào label để upload ảnh
+                    # img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event, path))
+                    img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event,path,selected_image=True))
+                    
+                    # Thêm sự kiện chuột cho hover
+                    img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
+                    img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
+                except Exception as e:
+                    print(f"Error loading image: {e}")
+
+        # Cấu hình Canvas để lấy kích thước của frame chứa ảnh
+        image_frame.update_idletasks()
+        frame_width = image_frame.winfo_reqwidth()
+        frame_height = image_frame.winfo_reqheight()
+
+        # Đặt kích thước của Canvas và kích thước khu vực cuộn của nó
+        canvas.config(scrollregion=(0, 0, frame_width, frame_height))
+
+        # Kết nối sự kiện lăn chuột với hàm xử lý
+        canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+        
+    
+    # =========================
+    
     def ChangeText(self,changeText):
         resultText.configure(state="normal")
         resultText.delete(1.0,END)
@@ -371,7 +461,12 @@ class App:
     def upLoadBtn_command(self):
         print("Choose file to upload")
         # self.ChangeText("Loading...")
-        UploadAction()
+        if not self.image_path:
+            # Nếu chưa, mở hộp thoại dialog để chọn ảnh
+            UploadAction(selected_image=False)
+        else:
+            # Nếu đã có image_path, chỉ cần truyền selected_image=True cho UploadAction
+            UploadAction(image_path=self.image_path, selected_image=True)
         catAnhBtn.place(x=20,y=20,width=150,height=45)     
 
     def clearTextBtn_command(self):
@@ -633,12 +728,30 @@ def fixErrorAction():
     app.result_txt = "\n".join(result)
     app.ChangeText(app.result_txt)
 
-def UploadAction(event=None):
-    image_path = filedialog.askopenfilename()
+def UploadAction(event=None, image_path=None, selected_image=False):
+    print(selected_image)
+    print(image_path)
+    # image_path = filedialog.askopenfilename()
 
+    # img = cv2.imread(image_path)
+    # app.showImg(img)
     global img
-    img = cv2.imread(image_path)
-    app.showImg(img)
+    if selected_image is True:
+        if image_path:
+            img = cv2.imread(image_path)
+            # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ danh sách
+            app.showImg(img)
+        else:
+            print("Không có hình trong danh sách.")
+    else:
+        # Nếu không có ảnh được chọn từ danh sách, mở hộp thoại để chọn ảnh
+        if image_path is None:
+            image_path = filedialog.askopenfilename()
+        if image_path:
+            img = cv2.imread(image_path)
+            # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ hộp thoại
+            app.showImg(img)
+
 
 def cropImageAction():
     global imgList
