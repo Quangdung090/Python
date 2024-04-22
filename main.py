@@ -374,6 +374,8 @@ class App:
         self.image_path = None  # Khởi tạo image_path là None
         self.image_selected=False
         self.image_list = []  # Danh sách để lưu trữ các đường dẫn của các ảnh đã chọn
+        self.flag=False
+        
     # ===================
     
         
@@ -465,9 +467,18 @@ class App:
         if self.image_selected:  # Kiểm tra xem ảnh đã được chọn chưa
             result = mb.askquestion('Add To Important Image', 'Do you really want to Add To List?')
             if result == 'yes':
-                self.image_list.append(self.image_path)
-                # app.show_all_images(self)
-                print("Them thanh cong:", self.image_path)
+                for filePath in self.image_list:
+                    if self.image_path == filePath:
+                        mb.showinfo("Existed!","Image existed!")
+                        self.flag=True
+                        break
+                if self.flag==True:
+                    print("Image Existed")
+                    return
+                else:
+                    self.image_list.append(self.image_path)
+                    # app.show_all_images(self)
+                    print("Them thanh cong:", self.image_path)  
             else:
                 print("Operation cancelled.")
         else:
