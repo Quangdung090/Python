@@ -1,5 +1,4 @@
 from customtkinter import *
-from tkinter import messagebox as mb
 from CTkTable import CTkTable
 from PIL import Image
 
@@ -11,9 +10,6 @@ from PIL import Image
 from fpdf import FPDF
 from pyaspeller import YandexSpeller
 from tkinter.ttk import *
-import csv
-from datetime import datetime
-from pathlib import Path
 
 from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder, get_cer, get_wer
@@ -21,7 +17,6 @@ from mltu.transformers import ImageResizer
 
 class TrangChu(CTkFrame):
     def __init__(self, master, **kwargs):
-        self.master = master
         super().__init__(master, **kwargs)
         self.pack_propagate(0)
         self.configure(width=1080, height=720, fg_color="#ffffff", corner_radius=0)
@@ -34,9 +29,10 @@ class TrangChu(CTkFrame):
             height=45, 
             fg_color="#6BD425", 
             hover_color="#618B25",
-            text="Chọn ảnh",
+            text="Choose a file",
             font=("Arial Bold",12),
             text_color="#FFFFFF",
+            corner_radius=1,
             command=self.upLoadBtn_command
             )
         uploadBtn.place(x=20, y=20)
@@ -73,7 +69,6 @@ class TrangChu(CTkFrame):
         )
         clearTextBtn.place(x=900,y=90)
 
-        global savePDFBtn
         savePDFBtn = CTkButton(
             master=self,
             width=150,
@@ -85,6 +80,7 @@ class TrangChu(CTkFrame):
             text_color="#ffffff",
             command=self.savePDFBtn_command
         )
+        savePDFBtn.place(x=200,y=20)
 
         global imageLabel
         imageLabel = CTkLabel(
@@ -96,7 +92,6 @@ class TrangChu(CTkFrame):
             text="Click on 'Choose file to upload' to put image here"
         )
         imageLabel.place(x=0, y=140)
-        self.current_image_path = ""
 
         global resultText
         resultText = CTkTextbox(
@@ -304,7 +299,6 @@ class TrangChu(CTkFrame):
         editTextBtn.place_forget()
         saveEditedTextBtn.place_forget()
         cancelEditedTextBtn.place_forget()
-        savePDFBtn.place_forget()
         resultText.configure(state="disabled")
 
     def saveAsPdf(self, event=None):
@@ -435,8 +429,6 @@ class TrangChu(CTkFrame):
 
     def UploadAction(self, event=None):
         image_path = filedialog.askopenfilename()
-        self.current_image_path = image_path
-        print(self.current_image_path)
         global img
         img = cv2.imread(image_path)
         self.showImg(img)
@@ -532,7 +524,6 @@ class TrangChu(CTkFrame):
         ShowResult = wordSpliter(self.final_predict)
         self.showImg(boxImg)
         self.ChangeText("\n".join(ShowResult))
-        print(self.final_predict)
 
     def showErrorAction(self):
         self.ChangeText("waiting...")
@@ -561,16 +552,6 @@ class TrangChu(CTkFrame):
         self.pdfTextArray = wordSpliter(output_data)
         self.result_txt = "\n".join(result)
         self.ChangeText(self.result_txt)
-        savePDFBtn.place(x=200,y=20)
-        file_name, file_extension = os.path.splitext(self.current_image_path)
-        now = datetime.now()
-        dt_string = now.strftime("%d-%m-%Y_%H--%M--%S")
-        history_image_name = f'{dt_string}{file_extension}'
-        import shutil
-        shutil.copyfile(self.current_image_path, f'history/images/{history_image_name}')
-        with open('history/history.csv', 'a', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter='|', quotechar='"', quoting=csv.QUOTE_ALL)
-            csvwriter.writerow([history_image_name, self.result_txt])
 
     def initModel(self):
         import pandas as pd
