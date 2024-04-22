@@ -636,9 +636,7 @@ class App:
         saveEditedTextBtn.place_forget()
         cancelEditedTextBtn.place_forget()
         resultText.configure(state="disabled")
-        
-        
-        
+
 
 class ImageToWordModel(OnnxInferenceModel):
     def __init__(self, char_list: typing.Union[str, list], *args, **kwargs):
