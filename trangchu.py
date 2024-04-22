@@ -91,8 +91,8 @@ class TrangChu(CTkFrame):
             master=self,
             font=('Arial Bold', 14),
             anchor="center",
-            width=541,
-            height=580,
+            width=540,
+            height=570,
             text="Click on 'Choose file to upload' to put image here"
         )
         imageLabel.place(x=0, y=140)
@@ -278,18 +278,16 @@ class TrangChu(CTkFrame):
         imageLabel.configure(text="")
         displayImg = ImageResizer.resize_maintaining_aspect_ratio(
             inputImage,
-            imageLabel.winfo_width(),
-            imageLabel.winfo_height()
+            imageLabel.cget("width"),
+            imageLabel.cget("height")
         )
         im = Image.fromarray(displayImg)
         # imtk = ImageTk.PhotoImage(im)
         imCtk = CTkImage(
             light_image=im,
-            dark_image=im,
-            size=(imageLabel.winfo_width(), imageLabel.winfo_height())
+            size=(imageLabel.cget("width"), imageLabel.cget("height"))
         )
         imageLabel.configure(image=imCtk)
-        imageLabel.image = imCtk
 
     def resetDisplay(self):
         catAnhBtn.place_forget()
