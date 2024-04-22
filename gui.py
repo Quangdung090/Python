@@ -3,6 +3,7 @@ from CTkTable import CTkTable
 from PIL import Image
 from trangchu import TrangChu
 from lichsu import LichSu
+import tkinter as tk
 
 def CenterWindowToDisplay(Screen: CTk, width: int, height: int, scale_factor: float = 1.0):
         screen_width = Screen.winfo_screenwidth()
@@ -23,6 +24,7 @@ class App(CTk):
         set_appearance_mode("light")
         self.geometry(CenterWindowToDisplay(self, 1280, 720, self._get_window_scaling()))
         self.resizable(width=False, height=False)
+        self.title("App")
 
         sideMenu = CTkFrame(
             master=self, 
@@ -89,6 +91,9 @@ class App(CTk):
             B.configure(fg_color="#6a8eae")
         btn.configure(fg_color="#435b70")
         frame.pack(anchor="center")
+        if(frame == self.frames[LichSu]):
+            self.frames[LichSu].initData()
+
 
 app = App()
 app.mainloop()
