@@ -39,6 +39,7 @@ class HoverButton(tk.Button):
     def on_leave(self, e):
         self['background'] = self.bg
 
+
 class App:        
     
     def __init__(self, root):
@@ -341,6 +342,21 @@ class App:
         cancelEditedTextBtn["command"] = self.cancelEditedTextBtn_command
         cancelEditedTextBtn.place_forget()
         
+        # Nut Add Image
+        AddImage = HoverButton(root, "#ccc", "#000")
+        AddImage["activebackground"] = "#ccc"
+        AddImage["activeforeground"] = "#ffffff"
+        AddImage["bg"] = "#ccc"
+        AddImage["cursor"] = "hand2"
+        ft = tkFont.Font(family='Times', size=14, weight="bold")
+        AddImage["relief"] = "ridge"
+        AddImage["font"] = ft
+        AddImage["fg"] = "#fffefe"
+        AddImage["justify"] = "center"
+        AddImage["text"] = "Add To Important Images"
+        AddImage.place(x=600, y=20, width=220, height=45)
+        AddImage["command"] = self.AddToList_command
+        
         # Nut All Images
         allImagesBtn = HoverButton(root, "#ccc", "#000")
         allImagesBtn["activebackground"] = "#ccc"
@@ -352,11 +368,12 @@ class App:
         allImagesBtn["font"] = ft
         allImagesBtn["fg"] = "#fffefe"
         allImagesBtn["justify"] = "center"
-        allImagesBtn["text"] = "All Images"
-        allImagesBtn.place(x=380, y=20, width=150, height=45)
+        allImagesBtn["text"] = "All Important Images"
+        allImagesBtn.place(x=380, y=20, width=200, height=45)
         allImagesBtn["command"] = self.show_all_images
         self.image_path = None  # Khởi tạo image_path là None
-    
+        self.image_selected=False
+        self.image_list = []  # Danh sách để lưu trữ các đường dẫn của các ảnh đã chọn
     # ===================
     
         
@@ -365,9 +382,11 @@ class App:
         def upload_image(event,image_path,selected_image=True):
             # image_path = event.widget.image_path
             UploadAction(event,image_path,selected_image)
+            self.image_selected=True
+            
         # Tạo cửa sổ mới để hiển thị ảnh
         image_window = tk.Toplevel(root)
-        image_window.title("Tất cả Ảnh")
+        image_window.title("All Images")
 
         # Tạo một Canvas để chứa ảnh và kết nối nó với thanh Scrollbar
         canvas = tk.Canvas(image_window)
@@ -385,34 +404,43 @@ class App:
         canvas.create_window((0, 0), window=image_frame, anchor="nw")
 
         # Đường dẫn đến thư mục chứa ảnh
-        image_folder = "Images"  # Thay đổi thành đường dẫn của thư mục ảnh của bạn
+        # image_folder = "Images"  # Thay đổi thành đường dẫn của thư mục ảnh của bạn
 
-        # Duyệt qua tất cả các tệp trong thư mục ảnh và hiển thị chúng
-        for filename in os.listdir(image_folder):
-            filepath = os.path.join(image_folder, filename)
-            if os.path.isfile(filepath):
-                try:
-                    # Mở ảnh bằng thư viện PIL
-                    img = Image.open(filepath)
-                    # Resize ảnh nếu cần thiết
-                    img.thumbnail((350, 350))
-                    # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
-                    img = ImageTk.PhotoImage(img)
-                    # Tạo một widget Label để hiển thị ảnh
-                    img_label = tk.Label(image_frame, image=img)
-                    img_label.image = img  # Giữ tham chiếu đến ảnh để tránh bị thu gom bởi Python
-                    img_label.image_path = filepath  # Đặt đường dẫn của ảnh cho thuộc tính image_path
-                    img_label.pack(padx=5, pady=5)
-                    
-                    # Gắn sự kiện chuột click vào label để upload ảnh
-                    # img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event, path))
-                    img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event,path,selected_image=True))
-                    
-                    # Thêm sự kiện chuột cho hover
-                    img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
-                    img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
-                except Exception as e:
-                    print(f"Error loading image: {e}")
+        # # Duyệt qua tất cả các tệp trong thư mục ảnh và hiển thị chúng
+        # for filename in os.listdir(image_folder):
+        #     filepath = os.path.join(image_folder, filename)
+        #     if os.path.isfile(filepath):
+        #         try:
+        #             # Thêm đường dẫn của ảnh vào danh sách
+        #             self.image_list.append(filepath)
+        #         except Exception as e:
+        #             print(f"Error loading image: {e}")
+        
+        # Duyệt qua tất cả các đường dẫn ảnh trong danh sách và hiển thị chúng
+        for filepath in self.image_list:
+            try:
+                # Mở ảnh bằng thư viện PIL
+                img = Image.open(filepath)
+                # Resize ảnh nếu cần thiết
+                img.thumbnail((350, 350))
+                # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
+                img = ImageTk.PhotoImage(img)
+                # Tạo một widget Label để hiển thị ảnh
+                img_label = tk.Label(image_frame, image=img)
+                img_label.image = img  # Giữ tham chiếu đến ảnh để tránh bị thu gom bởi Python
+                img_label.image_path = filepath  # Đặt đường dẫn của ảnh cho thuộc tính image_path
+                img_label.pack(padx=5, pady=5)
+
+                # Gắn sự kiện chuột click vào label để upload ảnh
+                img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event,path) & self.image_path==path)
+                
+                # Thêm sự kiện chuột cho hover
+                img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
+                img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
+            except Exception as e:
+                print(f"Error loading image: {e}")
+         
+        print(self.image_list)
 
         # Cấu hình Canvas để lấy kích thước của frame chứa ảnh
         image_frame.update_idletasks()
@@ -425,9 +453,22 @@ class App:
         # Kết nối sự kiện lăn chuột với hàm xử lý
         canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
         
+        
     
     # =========================
-    
+    def AddToList_command(self):
+        if self.image_selected:  # Kiểm tra xem ảnh đã được chọn chưa
+            result = mb.askquestion('Add To Important Image', 'Do you really want to Add To List?')
+            if result == 'yes':
+                self.image_list.append(self.image_path)
+                # app.show_all_images(self)
+                print("Them thanh cong:", self.image_path)
+            else:
+                print("Operation cancelled.")
+        else:
+            print("No image selected.")
+            
+            
     def ChangeText(self,changeText):
         resultText.configure(state="normal")
         resultText.delete(1.0,END)
@@ -477,6 +518,8 @@ class App:
 
     def clearImgBtn_command(self):
         print("clear Image")
+        self.image_selected=False
+        self.image_path=None
         imageLabel.configure(image="")
         # Ẩn hết nút
         self.resetDisplay()
@@ -485,7 +528,10 @@ class App:
     def savePDFBtn_command(self):
         print("Save as pdf")
         saveAsPdf()
+        
 
+    
+        
 
     def exitAppBtn_command(self):
         print("quit")
@@ -747,7 +793,9 @@ def UploadAction(event=None, image_path=None, selected_image=False):
         # Nếu không có ảnh được chọn từ danh sách, mở hộp thoại để chọn ảnh
         if image_path is None:
             image_path = filedialog.askopenfilename()
+            app.image_selected= True
         if image_path:
+            app.image_path=image_path
             img = cv2.imread(image_path)
             # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ hộp thoại
             app.showImg(img)
@@ -775,6 +823,7 @@ def saveAsPdf(event=None):
             
     pdf.output("output.pdf")     
     mb.showinfo("Succeed!","Save as PDF Successfully!")
+    
 
 def showConfirmDialog(event=None):
     result = mb.askquestion('Exit Application', 'Do you really want to exit?') # mb = messagebox (import from tkinter)
