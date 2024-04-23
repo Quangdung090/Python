@@ -1,6 +1,4 @@
 from customtkinter import *
-from tkinter import messagebox as mb
-from CTkTable import CTkTable
 from PIL import Image
 
 import cv2
@@ -8,9 +6,8 @@ import typing
 import numpy as np
 import language_tool_python
 from PIL import Image
-from fpdf import FPDF
-from pyaspeller import YandexSpeller
 from tkinter.ttk import *
+
 import csv
 from datetime import datetime
 from pathlib import Path
@@ -26,8 +23,9 @@ from tkinter import messagebox
 import os
 import shutil
 
+
 from mltu.inferenceModel import OnnxInferenceModel
-from mltu.utils.text_utils import ctc_decoder, get_cer, get_wer
+from mltu.utils.text_utils import ctc_decoder
 from mltu.transformers import ImageResizer
 
 class TrangChu(CTkFrame):
@@ -38,6 +36,7 @@ class TrangChu(CTkFrame):
         self.configure(width=1080, height=720, fg_color="#ffffff", corner_radius=0)
         self.initModel()
         self.pdfTextArray=[]
+        self.final_predict =""
 
         global uploadBtn 
         uploadBtn = CTkButton(
@@ -91,7 +90,7 @@ class TrangChu(CTkFrame):
             font=('Arial Bold', 14),
             anchor="center",
             width=540,
-            height=570,
+            height=580,
             text="Click on 'Choose file to upload' to put image here"
         )
         imageLabel.place(x=0, y=140)
@@ -101,7 +100,7 @@ class TrangChu(CTkFrame):
         resultText = CTkTextbox(
             master=self,
             width=540,
-            height=570,
+            height=580,
             font=("Arial Bold", 14),
             border_width=1,
             text_color="#000000",
@@ -201,71 +200,6 @@ class TrangChu(CTkFrame):
             command=self.duDoanToanBoBtn_command
         )
 
-        global showErrorBtn
-        showErrorBtn = CTkButton(
-            master=self,
-            width=150,
-            height=45,
-            fg_color="#6bd425",
-            hover_color="#618B25",
-            text="Hiển Thị lỗi",
-            text_color="#ffffff",
-            font=("Arial Bold", 14),
-            command=self.showErorrBtn_command
-        )
-
-        global fixErrorBtn
-        fixErrorBtn = CTkButton(
-            master=self,
-            width=150,
-            height=45,
-            fg_color="#5bc0be",
-            hover_color="#1F7A8C",
-            text="Sửa Lỗi",
-            text_color="#ffffff",
-            font=("Arial Bold", 14),
-            command=self.fixErrorBtn_command
-        )
-
-        global editTextBtn
-        editTextBtn = CTkButton(
-            master=self,
-            width=150,
-            height=45,
-            fg_color="#6bd425",
-            hover_color="#618B25",
-            text="Tự chỉnh sửa thêm",
-            text_color="#ffffff",
-            font=("Arial Bold", 14),
-            command=self.editTextBtn_command
-        )
-
-        global saveEditedTextBtn
-        saveEditedTextBtn = CTkButton(
-            master=self,
-            width=150,
-            height=45,
-            fg_color="#6bd425",
-            hover_color="#618B25",
-            text="Lưu",
-            text_color="#ffffff",
-            font=("Arial Bold", 14),
-            command=self.saveEditedTextBtn_command
-        )
-
-        global cancelEditedTextBtn
-        cancelEditedTextBtn = CTkButton(
-            master=self,
-            width=150,
-            height=45,
-            fg_color="#e9190f",
-            hover_color="#FB3640",
-            text="Hủy",
-            text_color="#ffffff",
-            font=("Arial Bold", 14),
-            command=self.cancelEditedTextBtn_command
-        )
-        
         addImageBtn = CTkButton(
             master=self,
             width=220,
@@ -383,8 +317,6 @@ class TrangChu(CTkFrame):
     #     # Kết nối sự kiện lăn chuột với hàm xử lý
         canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
 
-    # ===================
-
     def addImageBtn_command(self):
         if self.image_selected:  # Kiểm tra xem ảnh đã được chọn chưa
             result = mb.askquestion('Add To Important Image', 'Do you really want to Add To List?')
@@ -405,8 +337,6 @@ class TrangChu(CTkFrame):
                 print("Operation cancelled.")
         else:
             print("No image selected.")
-    
-
     
     def ChangeText(self, changeText):
         resultText.configure(state="normal")
@@ -437,11 +367,6 @@ class TrangChu(CTkFrame):
         dongKhungBtn.place_forget()
         duDoanTungCauBtn.place_forget()
         duDoanToanBoBtn.place_forget()
-        fixErrorBtn.place_forget()
-        showErrorBtn.place_forget()
-        editTextBtn.place_forget()
-        saveEditedTextBtn.place_forget()
-        cancelEditedTextBtn.place_forget()
         resultText.configure(state="disabled")
 
 
@@ -514,47 +439,6 @@ class TrangChu(CTkFrame):
     def duDoanToanBoBtn_command(self):
         print("Dự đoán toàn bộ")
         self.PredictAllAction()
-        showErrorBtn.place(x=20,y=20)
-        fixErrorBtn.place(x=200,y=20)
-
-    def showErorrBtn_command(self):
-        print("Hiển thị lỗi")
-        self.showErrorAction()
-
-    def fixErrorBtn_command(self):
-        print("Sửa Lỗi")
-        self.pdfTextArray = []
-        self.result_txt =""
-        self.fixErrorAction()
-        editTextBtn.place(x=20,y=20)
-        duDoanChuBtn.place_forget()
-        fixErrorBtn.place_forget()
-        duDoanToanBoBtn.place_forget()
-
-    def editTextBtn_command(self):
-        print("Người dùng tự sửa thêm")
-        saveEditedTextBtn.place(x=20,y=20)
-        cancelEditedTextBtn.place(x=200,y=20)
-        resultText.configure(state="normal")
-
-
-    def saveEditedTextBtn_command(self):
-        print("Lưu")
-        newOutput = resultText.get(1.0,END)
-        outputArr = newOutput.split('\n')
-        self.pdfTextArray = outputArr
-        self.result_txt = newOutput
-        saveEditedTextBtn.place_forget()
-        cancelEditedTextBtn.place_forget()
-        resultText.configure(state="disabled")
-
-
-    def cancelEditedTextBtn_command(self):
-        print("Hủy")
-        self.ChangeText(self.result_txt)
-        saveEditedTextBtn.place_forget()
-        cancelEditedTextBtn.place_forget()
-        resultText.configure(state="disabled")
 
     # def UploadAction(self, event=None):
     #     image_path = filedialog.askopenfilename()
@@ -666,6 +550,7 @@ class TrangChu(CTkFrame):
         self.waithere(100)
         predictText = self.model.predict(currImg)
         self.ChangeText(predictText)
+        self.pdfTextArray.append(predictText)
         self.final_predict = self.final_predict + " " + predictText
 
     def PredictAllAction(self):
@@ -675,50 +560,11 @@ class TrangChu(CTkFrame):
             currImg = imgList.pop()
             predictText = self.model.predict(currImg)
             self.final_predict = self.final_predict + " " + predictText
+            self.pdfTextArray.append(predictText)
         ShowResult = wordSpliter(self.final_predict)
         self.showImg(boxImg)
         self.ChangeText("\n".join(ShowResult))
         print(self.final_predict)
-
-    def showErrorAction(self):
-        self.ChangeText("waiting...")
-        self.waithere(100)
-        print("start checking")
-        tool = language_tool_python.LanguageTool('en-US')
-        matches = tool.check(self.final_predict)
-
-        resultStr =""
-        for i in matches:
-            resultStr += '\n'+ i.message + '\n' + i.context
-            # resultStr += '\n{}\n{}\n'.format(
-            # i.context, ' ' * (i.offsetInContext)+ '^' * i.errorLength
-            # )
-        self.ChangeText(resultStr)
-
-    def fixErrorAction(self):
-        self.ChangeText("waiting...")
-        self.waithere(100)
-        print("start fixing")
-        spell = Speller()
-        output_text = spell(self.final_predict)
-            # print(output_text)
-
-        output_data = error_correcting(output_text)
-        result = wordSpliter(output_data)
-        resultArray = wordSpliter(output_data)
-        for i in resultArray:
-            self.pdfTextArray.append(i)
-        self.result_txt = "\n".join(result)
-        self.ChangeText(self.result_txt)
-        file_name, file_extension = os.path.splitext(self.current_image_path)
-        now = datetime.now()
-        dt_string = now.strftime("%d-%m-%Y_%H--%M--%S")
-        history_image_name = f'{dt_string}{file_extension}'
-        import shutil
-        shutil.copyfile(self.current_image_path, f'history/images/{history_image_name}')
-        with open('history/history.csv', 'a', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter='|', quotechar='"', quoting=csv.QUOTE_ALL)
-            csvwriter.writerow([history_image_name, self.result_txt])
 
     def initModel(self):
         import pandas as pd

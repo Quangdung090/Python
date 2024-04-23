@@ -1,10 +1,9 @@
 from customtkinter import *
-from CTkTable import CTkTable
 from PIL import Image
 from trangchu import TrangChu
 from lichsu import LichSu
 from saveaspdf import SavePdfGui
-import tkinter as tk
+from errorfix import errorFix
 
 def CenterWindowToDisplay(Screen: CTk, width: int, height: int, scale_factor: float = 1.0):
         screen_width = Screen.winfo_screenwidth()
@@ -59,6 +58,24 @@ class App(CTk):
         )
         trangChuBtn.pack(anchor="center", pady=(70,0))
 
+        errorFixIcon_data =Image.open("icon/messagecheck.png")
+        errorFixIcon = CTkImage(light_image=errorFixIcon_data)
+
+        global errorFixBtn
+        errorFixBtn = CTkButton(
+            master=sideMenu, 
+            width=200, 
+            height=50, 
+            corner_radius=1,
+            image=errorFixIcon,
+            fg_color="#6a8eae", 
+            text="Sửa lỗi",
+            font=("Arial Bold", 16), 
+            text_color="#FFFFFF", 
+            command=lambda: self.show_frame(self.frames[errorFix],errorFixBtn)
+        )
+        errorFixBtn.pack(anchor="center")
+
         saveaspdfIcon_data = Image.open("icon/pdf.png")
         saveaspdfIcon = CTkImage(light_image=saveaspdfIcon_data)
 
@@ -98,8 +115,11 @@ class App(CTk):
         lichSuBtn.pack(anchor="center")
 
         self.frames = {}
-        for F in (TrangChu, LichSu,SavePdfGui):
-            frame = F(self)
+        for F in (TrangChu, LichSu,SavePdfGui,errorFix):
+            if(F == errorFix):
+                frame = F(self,self.frames[TrangChu])
+            else:
+                frame = F(self)
             self.frames[F] = frame
 
         self.show_frame(self.frames[TrangChu], trangChuBtn)
@@ -107,7 +127,7 @@ class App(CTk):
     def show_frame(self, frame, btn):
         for F in self.frames:
             self.frames[F].pack_forget()
-        for B in (trangChuBtn, lichSuBtn,saveaspdfNavBtn):
+        for B in (trangChuBtn, lichSuBtn,saveaspdfNavBtn,errorFixBtn):
             B.configure(fg_color="#6a8eae")
         btn.configure(fg_color="#435b70")
         frame.pack(anchor="center")
@@ -115,10 +135,5 @@ class App(CTk):
             self.frames[LichSu].initData()
         if(frame == self.frames[SavePdfGui]):
             self.frames[SavePdfGui].setText(self.frames[TrangChu])
-
-
-    
-
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+        if(frame == self.frames[errorFix]):
+            self.frames[errorFix].setDefault(self.frames[TrangChu])
