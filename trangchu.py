@@ -7,6 +7,23 @@ import numpy as np
 import language_tool_python
 from PIL import Image
 from tkinter.ttk import *
+
+import csv
+from datetime import datetime
+from pathlib import Path
+from autocorrect import Speller
+from tkinter.ttk import *
+import csv
+from datetime import datetime
+from pathlib import Path
+from PIL import Image, ImageTk
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+import os
+import shutil
+
+
 from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder
 from mltu.transformers import ImageResizer
@@ -183,6 +200,144 @@ class TrangChu(CTkFrame):
             command=self.duDoanToanBoBtn_command
         )
 
+        addImageBtn = CTkButton(
+            master=self,
+            width=220,
+            height=45,
+            fg_color="#cccccc",
+            hover_color="#000000",
+            text="Add To Important Images",
+            text_color="#fffefe",
+            font=("Arial Bold", 14),
+            command=self.addImageBtn_command
+        )
+        
+        addImageBtn.place(x=600, y=20)
+        allImagesBtn = CTkButton(
+            master=self,
+            width=200,
+            height=45,
+            fg_color="#cccccc",
+            hover_color="#000000",
+            text="All Important Images",
+            text_color="#fffefe",
+            font=("Arial Bold", 14),
+            command=self.show_all_images
+        )
+        allImagesBtn.place(x=380, y=20)
+        self.image_path = None  # Khởi tạo image_path là None
+        self.image_selected=False
+        self.image_list = []  # Danh sách để lưu trữ các đường dẫn của các ảnh đã chọn
+        self.flag=False
+
+    def show_all_images(self):
+        # Tạo thư mục mới nếu nó chưa tồn tại
+        folder_name = "AllImages"
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+         
+        # Di chuyển tất cả các hình ảnh từ image_list vào thư mục mới
+        for image_path in self.image_list:
+            filename = os.path.basename(image_path)
+            destination = os.path.join(folder_name, filename)
+            shutil.copyfile(image_path, destination)
+            
+        if not os.listdir("AllImages"):        
+            messagebox.showinfo("Empty!", "No image!")
+            return
+        else:
+            def upload_image(event, image_path, selected_image=True):
+                self.current_image_path = image_path
+                # image_path = event.widget.image_path
+                uploadBtn.pack_forget() 
+                catAnhBtn.place(x=20,y=20)
+                self.UploadAction(event, image_path, selected_image)
+                self.image_selected = True
+            
+            # Tạo cửa sổ mới để hiển thị ảnh
+            image_window = tk.Toplevel(master=self.master)
+            image_window.title("All Images")
+
+            # Tạo một canvas để chứa frame
+            canvas = tk.Canvas(image_window)
+            canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+            # Tạo một scrollbar
+            scrollbar = tk.Scrollbar(image_window, orient=tk.VERTICAL, command=canvas.yview)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+            # Liên kết scrollbar với canvas
+            canvas.configure(yscrollcommand=scrollbar.set)
+
+            # Tạo một frame để chứa các widget Label hiển thị ảnh
+            image_frame = tk.Frame(canvas)
+            canvas.create_window((0, 0), window=image_frame, anchor=tk.NW)
+
+            
+            
+            for filename in os.listdir(folder_name):
+                try:
+                    filepath=os.path.join(folder_name,filename)
+                    # Mở ảnh bằng thư viện PIL
+                    img = Image.open(filepath)
+                    # Resize ảnh nếu cần thiết
+                    img.thumbnail((350, 350))  # Set a larger thumbnail size here
+                    # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
+                    img_tk = ImageTk.PhotoImage(img)
+                    # Tạo một widget Label để hiển thị ảnh
+                    img_label = tk.Label(
+                        master=image_frame,
+                        text="",
+                        image=img_tk
+                    )
+                    img_label.image = img_tk  # Giữ tham chiếu đến ảnh để tránh bị thu gom bởi Python
+                    img_label.image_path = filepath  # Đặt đường dẫn của ảnh cho thuộc tính image_path
+                    img_label.pack(padx=5, pady=5)
+
+                    # Gắn sự kiện chuột click vào label để upload ảnh
+                    img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event, path))
+                    
+                    
+                    # Thêm sự kiện chuột cho hover
+                    img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
+                    img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
+                except Exception as e:
+                    print(f"Error loading image: {e}")
+
+        print(self.image_list)
+
+        # Cấu hình Canvas để lấy kích thước của frame chứa ảnh
+        image_frame.update_idletasks()
+        frame_width = image_frame.winfo_reqwidth()
+        frame_height = image_frame.winfo_reqheight()
+
+    #     # Đặt kích thước của Canvas và kích thước khu vực cuộn của nó
+        canvas.config(scrollregion=(0, 0, frame_width, frame_height))
+
+    #     # Kết nối sự kiện lăn chuột với hàm xử lý
+        canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+
+    def addImageBtn_command(self):
+        if self.image_selected:  # Kiểm tra xem ảnh đã được chọn chưa
+            result = mb.askquestion('Add To Important Image', 'Do you really want to Add To List?')
+            if result == 'yes':
+                for filePath in self.image_list:
+                    if self.image_path == filePath:
+                        mb.showinfo("Existed!","Image existed!")
+                        self.flag=True
+                        break
+                if self.flag==True:
+                    print("Image Existed")
+                    return
+                else:
+                    self.image_list.append(self.image_path)
+                    # app.show_all_images(self)
+                    print("Them thanh cong:", self.image_path)  
+            else:
+                print("Operation cancelled.")
+        else:
+            print("No image selected.")
+    
     def ChangeText(self, changeText):
         resultText.configure(state="normal")
         resultText.delete(1.0,END)
@@ -218,7 +373,7 @@ class TrangChu(CTkFrame):
     def upLoadBtn_command(self):
         print("Choose file to upload")
         self.UploadAction()
-        uploadBtn.pack_forget()
+        uploadBtn.pack_forget() 
         catAnhBtn.place(x=20,y=20)
 
     def clearTextBtn_command(self):
@@ -228,7 +383,16 @@ class TrangChu(CTkFrame):
             self.ChangeText("")
 
     def clearImgBtn_command(self):
+        # print("clear Image")
+        # img = Image.open("img/image.png")
+        # nullImage = CTkImage(light_image=img)
+        # imageLabel.configure(image=nullImage)
+        # imageLabel.configure(text="Click on 'Choose file to upload' to put image here")
+        # # Ẩn hết nút
+        # self.resetDisplay()
         print("clear Image")
+        self.image_selected=False
+        self.image_path=None
         img = Image.open("img/image.png")
         nullImage = CTkImage(light_image=img)
         imageLabel.configure(image=nullImage)
@@ -276,13 +440,36 @@ class TrangChu(CTkFrame):
         print("Dự đoán toàn bộ")
         self.PredictAllAction()
 
-    def UploadAction(self, event=None):
-        image_path = filedialog.askopenfilename()
-        self.current_image_path = image_path
-        print(self.current_image_path)
+    # def UploadAction(self, event=None):
+    #     image_path = filedialog.askopenfilename()
+    #     self.current_image_path = image_path
+    #     print(self.current_image_path)
+    #     global img
+    #     img = cv2.imread(image_path)
+    #     self.showImg(img)
+    def UploadAction(self, event=None, image_path=None, selected_image=False):
+        print(selected_image)
+        print("UploadAction ", image_path)
         global img
-        img = cv2.imread(image_path)
-        self.showImg(img)
+        if selected_image is True:
+            if image_path:
+                img = cv2.imread(image_path)
+                # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ danh sách
+                self.showImg(img)
+            else:
+                print("Không có hình trong danh sách.")
+        else:
+            # Nếu không có ảnh được chọn từ danh sách, mở hộp thoại để chọn ảnh
+            if image_path is None:
+                image_path = filedialog.askopenfilename()
+                self.current_image_path = image_path
+                
+                self.image_selected= True
+            if image_path:
+                self.image_path=image_path
+                img = cv2.imread(image_path)
+                # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ hộp thoại
+                self.showImg(img)
 
     def cropImageAction(self):
         global imgList
