@@ -3,6 +3,7 @@ from CTkTable import CTkTable
 from PIL import Image
 from trangchu import TrangChu
 from lichsu import LichSu
+from saveaspdf import SavePdfGui
 import tkinter as tk
 
 def CenterWindowToDisplay(Screen: CTk, width: int, height: int, scale_factor: float = 1.0):
@@ -18,6 +19,7 @@ class App(CTk):
     # global lichSu
     global trangChuBtn
     global lichSuBtn
+    
 
     def __init__(self):
         super().__init__()
@@ -25,6 +27,7 @@ class App(CTk):
         self.geometry(CenterWindowToDisplay(self, 1280, 720, self._get_window_scaling()))
         self.resizable(width=False, height=False)
         self.title("App")
+        self.pdfArray = []
 
         sideMenu = CTkFrame(
             master=self, 
@@ -56,6 +59,23 @@ class App(CTk):
         )
         trangChuBtn.pack(anchor="center", pady=(70,0))
 
+        saveaspdfIcon_data = Image.open("icon/pdf.png")
+        saveaspdfIcon = CTkImage(light_image=saveaspdfIcon_data)
+
+        global saveaspdfNavBtn
+        saveaspdfNavBtn = CTkButton(
+            master=sideMenu, 
+            width=200, 
+            height=50, 
+            corner_radius=1,
+            image=saveaspdfIcon,
+            fg_color="#6a8eae", 
+            text="Save PDF",
+            font=("Arial Bold", 16), 
+            text_color="#FFFFFF", 
+            command=lambda: self.show_frame(self.frames[SavePdfGui], saveaspdfNavBtn)
+        )
+        saveaspdfNavBtn.pack(anchor="center")
 
         lichSuIcon_data = Image.open("icon/history.png")
         lichSuIcon = CTkImage(
@@ -78,7 +98,7 @@ class App(CTk):
         lichSuBtn.pack(anchor="center")
 
         self.frames = {}
-        for F in (TrangChu, LichSu):
+        for F in (TrangChu, LichSu,SavePdfGui):
             frame = F(self)
             self.frames[F] = frame
 
@@ -87,13 +107,18 @@ class App(CTk):
     def show_frame(self, frame, btn):
         for F in self.frames:
             self.frames[F].pack_forget()
-        for B in (trangChuBtn, lichSuBtn):
+        for B in (trangChuBtn, lichSuBtn,saveaspdfNavBtn):
             B.configure(fg_color="#6a8eae")
         btn.configure(fg_color="#435b70")
         frame.pack(anchor="center")
         if(frame == self.frames[LichSu]):
             self.frames[LichSu].initData()
+        if(frame == self.frames[SavePdfGui]):
+            self.frames[SavePdfGui].setText(self.frames[TrangChu])
 
 
-app = App()
-app.mainloop()
+    
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()

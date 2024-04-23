@@ -14,6 +14,7 @@ from tkinter.ttk import *
 import csv
 from datetime import datetime
 from pathlib import Path
+from autocorrect import Speller
 
 from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder, get_cer, get_wer
@@ -26,6 +27,7 @@ class TrangChu(CTkFrame):
         self.pack_propagate(0)
         self.configure(width=1080, height=720, fg_color="#ffffff", corner_radius=0)
         self.initModel()
+        self.pdfTextArray=[]
 
         global uploadBtn 
         uploadBtn = CTkButton(
@@ -72,19 +74,6 @@ class TrangChu(CTkFrame):
             command=self.clearTextBtn_command
         )
         clearTextBtn.place(x=900,y=90)
-
-        global savePDFBtn
-        savePDFBtn = CTkButton(
-            master=self,
-            width=150,
-            height=45,
-            fg_color="#5bc0be",
-            hover_color="#1F7A8C",
-            font=("Arial Bold", 12),
-            text="Save As Pdf",
-            text_color="#ffffff",
-            command=self.savePDFBtn_command
-        )
 
         global imageLabel
         imageLabel = CTkLabel(
@@ -302,26 +291,7 @@ class TrangChu(CTkFrame):
         editTextBtn.place_forget()
         saveEditedTextBtn.place_forget()
         cancelEditedTextBtn.place_forget()
-        savePDFBtn.place_forget()
         resultText.configure(state="disabled")
-
-    def saveAsPdf(self, event=None):
-        
-        pdf = FPDF()
-    
-            #Add a page
-        pdf.add_page()
-
-            #set style and size of font 
-            #that you want in the pdf
-        pdf.set_font("Arial", size = 15)
-            
-            # pdf.cell(200,35,txt=output_data,ln=10,align='J')
-        for x in self.pdfTextArray:
-            pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
-                
-        pdf.output("output.pdf")     
-        mb.showinfo("Succeed!","Save as PDF Successfully!")
 
 
     def upLoadBtn_command(self):
@@ -344,11 +314,6 @@ class TrangChu(CTkFrame):
         imageLabel.configure(text="Click on 'Choose file to upload' to put image here")
         # Ẩn hết nút
         self.resetDisplay()
-
-
-    def savePDFBtn_command(self):
-        print("Save as pdf")
-        self.saveAsPdf()
 
 
     def catAnhBtn_command(self):
@@ -551,15 +516,17 @@ class TrangChu(CTkFrame):
         self.ChangeText("waiting...")
         self.waithere(100)
         print("start fixing")
-        # output_text = error_correct_pyspeller(app.final_predict)
+        spell = Speller()
+        output_text = spell(self.final_predict)
             # print(output_text)
 
-        output_data = error_correcting(self.final_predict)
+        output_data = error_correcting(output_text)
         result = wordSpliter(output_data)
-        self.pdfTextArray = wordSpliter(output_data)
+        resultArray = wordSpliter(output_data)
+        for i in resultArray:
+            self.pdfTextArray.append(i)
         self.result_txt = "\n".join(result)
         self.ChangeText(self.result_txt)
-        savePDFBtn.place(x=200,y=20)
         file_name, file_extension = os.path.splitext(self.current_image_path)
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H--%M--%S")
