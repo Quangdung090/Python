@@ -1,7 +1,5 @@
 from customtkinter import *
 from tkinter import messagebox as mb
-from CTkTable import CTkTable
-from PIL import Image
 from tkinter import messagebox as mb
 import re
 from fpdf import FPDF
