@@ -1,7 +1,5 @@
 from customtkinter import *
-from CTkTable import CTkTable
 from PIL import Image
-import os
 import csv
 
 from component.lichSuItem import LichSuItem

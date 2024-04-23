@@ -7,18 +7,11 @@ import numpy as np
 import language_tool_python
 from PIL import Image
 from tkinter.ttk import *
+from tkinter import messagebox as mb
 
-import csv
-from datetime import datetime
-from pathlib import Path
-from autocorrect import Speller
 from tkinter.ttk import *
-import csv
-from datetime import datetime
-from pathlib import Path
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import ttk
 from tkinter import messagebox
 import os
 import shutil
