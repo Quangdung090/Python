@@ -73,7 +73,7 @@ class TrangChu(CTkFrame):
             font=('Arial Bold', 14),
             anchor="center",
             width=540,
-            height=570,
+            height=580,
             text="Click on 'Choose file to upload' to put image here"
         )
         imageLabel.place(x=0, y=140)
@@ -83,7 +83,7 @@ class TrangChu(CTkFrame):
         resultText = CTkTextbox(
             master=self,
             width=540,
-            height=570,
+            height=580,
             font=("Arial Bold", 14),
             border_width=1,
             text_color="#000000",

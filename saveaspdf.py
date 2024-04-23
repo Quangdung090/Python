@@ -64,10 +64,10 @@ class SavePdfGui(CTkFrame):
 
     def savePDFBtn_command(self):
         print("Save as pdf")
-
-        if(inputBox.get() == ""):
-            return
-        if(re.search("^[a-zA-Z]*$",inputBox.get()) == None):
+        file_name = inputBox.get()
+        if(file_name == ""):
+            file_name = "output"
+        if(re.search("^[a-zA-Z]*$",file_name) == None):
             mb.showinfo("Error","Tên file chỉ có chữ không cách")
             return
         pdf = FPDF()
@@ -83,7 +83,7 @@ class SavePdfGui(CTkFrame):
         for x in self.textArray:
             pdf.cell(200, 10, txt = x, ln = 10, align = 'J') 
                 
-        pdf.output(inputBox.get() + ".pdf")     
+        pdf.output(file_name + ".pdf")     
         mb.showinfo("Succeed!","Save as PDF Successfully!")
 
     def setText(self,TrangChu):
