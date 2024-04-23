@@ -302,48 +302,105 @@ class TrangChu(CTkFrame):
         # ===================
     
         
+    # def show_all_images(self):
+    #     if self.image_list == []:        
+    #         mb.showinfo("Empty!","No image!")
+    #         return
+    #     else:
+    #         def upload_image(event,image_path,selected_image=True):
+    #             # image_path = event.widget.image_path
+    #             self.UploadAction(event,image_path,selected_image)
+    #             self.image_selected=True
+            
+    #         # Tạo cửa sổ mới để hiển thị ảnh
+    #         image_window = CTkToplevel(
+    #             self.master
+    #         )
+    #         image_window.title("All Images")
+
+    #         # # Tạo một Canvas để chứa ảnh và kết nối nó với thanh Scrollbar
+    #         # canvas = tk.Canvas(image_window)
+            
+    #         # canvas.pack(side="left", fill="both", expand=True)
+
+    #         # # Tạo thanh Scrollbar
+    #         # scrollbar = tk.Scrollbar(image_window, orient="vertical", command=canvas.yview)
+    #         # scrollbar.pack(side="right", fill="y")
+
+    #         # # Liên kết thanh Scrollbar với Canvas
+    #         # canvas.configure(yscrollcommand=scrollbar.set)
+
+    #         # Tạo một frame để chứa các widget Label hiển thị ảnh
+    #         image_frame = CTkScrollableFrame(
+    #             master=image_window
+    #         )
+    #         image_frame.pack()
+    #         # canvas.create_window((0, 0), window=image_frame, anchor="nw")
+    #         for filepath in self.image_list:
+    #             try:
+    #                 # Mở ảnh bằng thư viện PIL
+    #                 img = Image.open(filepath)
+    #                 # Resize ảnh nếu cần thiết
+    #                 img.thumbnail((350, 350))
+    #                 # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
+    #                 img = ImageTk.PhotoImage(img)
+    #                 # Tạo một widget Label để hiển thị ảnh
+    #                 img_label = CTkLabel(
+    #                     master=image_frame,
+    #                     text="",
+    #                     image=CTkImage(light_image=img)
+    #                 )
+    #                 img_label.image = img  # Giữ tham chiếu đến ảnh để tránh bị thu gom bởi Python
+    #                 img_label.image_path = filepath  # Đặt đường dẫn của ảnh cho thuộc tính image_path
+    #                 img_label.pack(padx=5, pady=5)
+
+    #                 # Gắn sự kiện chuột click vào label để upload ảnh
+    #                 img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event,path) & self.image_path==path)
+                    
+    #                 # Thêm sự kiện chuột cho hover
+    #                 img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
+    #                 img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
+    #             except Exception as e:
+    #                 print(f"Error loading image: {e}")
+    #     print(self.image_list)
+
+    #     # Cấu hình Canvas để lấy kích thước của frame chứa ảnh
+    #     image_frame.update_idletasks()
+    #     frame_width = image_frame.winfo_reqwidth()
+    #     frame_height = image_frame.winfo_reqheight()
+
+    #     # Đặt kích thước của Canvas và kích thước khu vực cuộn của nó
+    #     canvas.config(scrollregion=(0, 0, frame_width, frame_height))
+
+    #     # Kết nối sự kiện lăn chuột với hàm xử lý
+    #     canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+
     def show_all_images(self):
         if self.image_list == []:        
-            mb.showinfo("Empty!","No image!")
+            mb.showinfo("Empty!", "No image!")
             return
         else:
-            def upload_image(event,image_path,selected_image=True):
+            def upload_image(event, image_path, selected_image=True):
                 # image_path = event.widget.image_path
-                self.UploadAction(event,image_path,selected_image)
-                self.image_selected=True
+                self.UploadAction(event, image_path, selected_image)
+                self.image_selected = True
             
             # Tạo cửa sổ mới để hiển thị ảnh
-            image_window = CTkToplevel(
-                self.master
-            )
+            image_window = CTkToplevel(master=self.master)
             image_window.title("All Images")
 
-            # # Tạo một Canvas để chứa ảnh và kết nối nó với thanh Scrollbar
-            # canvas = tk.Canvas(image_window)
-            
-            # canvas.pack(side="left", fill="both", expand=True)
-
-            # # Tạo thanh Scrollbar
-            # scrollbar = tk.Scrollbar(image_window, orient="vertical", command=canvas.yview)
-            # scrollbar.pack(side="right", fill="y")
-
-            # # Liên kết thanh Scrollbar với Canvas
-            # canvas.configure(yscrollcommand=scrollbar.set)
-
             # Tạo một frame để chứa các widget Label hiển thị ảnh
-            image_frame = CTkScrollableFrame(
-                master=image_window
-            )
-            image_frame.pack()
-            # canvas.create_window((0, 0), window=image_frame, anchor="nw")
+            image_frame = CTkScrollableFrame(master=image_window)
+            image_frame.pack(fill="both", expand=True)
+
             for filepath in self.image_list:
                 try:
                     # Mở ảnh bằng thư viện PIL
                     img = Image.open(filepath)
                     # Resize ảnh nếu cần thiết
-                    # img.thumbnail((350, 350))
+                    img.thumbnail((350, 350))
                     # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
-                    # img = ImageTk.PhotoImage(img)
+                    img = ImageTk.PhotoImage(img)
                     # Tạo một widget Label để hiển thị ảnh
                     img_label = CTkLabel(
                         master=image_frame,
@@ -355,13 +412,14 @@ class TrangChu(CTkFrame):
                     img_label.pack(padx=5, pady=5)
 
                     # Gắn sự kiện chuột click vào label để upload ảnh
-                    img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event,path) & self.image_path==path)
+                    img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event, path))
                     
                     # Thêm sự kiện chuột cho hover
-                    # img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
-                    # img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
+                    img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
+                    img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
                 except Exception as e:
                     print(f"Error loading image: {e}")
+
         print(self.image_list)
 
         # Cấu hình Canvas để lấy kích thước của frame chứa ảnh
@@ -369,9 +427,11 @@ class TrangChu(CTkFrame):
         frame_width = image_frame.winfo_reqwidth()
         frame_height = image_frame.winfo_reqheight()
 
+        # Không cần thiết khi sử dụng CTkScrollableFrame
         # Đặt kích thước của Canvas và kích thước khu vực cuộn của nó
         # canvas.config(scrollregion=(0, 0, frame_width, frame_height))
 
+        # Không cần thiết khi sử dụng CTkScrollableFrame
         # Kết nối sự kiện lăn chuột với hàm xử lý
         # canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta/120)), "units"))
 
