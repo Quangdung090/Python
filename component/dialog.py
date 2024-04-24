@@ -35,19 +35,19 @@ class LichSuDialog(CTkToplevel):
         inputImage = cv2.imread(filepath)
         displayImg = ImageResizer.resize_maintaining_aspect_ratio(
             inputImage,
-            imageLabel.winfo_reqwidth(),
-            imageLabel.winfo_reqheight()
+            imageLabel.cget("width"),
+            imageLabel.cget("height")
         )
         im = Image.fromarray(displayImg)
         imageCTk = CTkImage(
             light_image=im,
-            size=(imageLabel.winfo_reqwidth(), imageLabel.winfo_reqheight())
+            size=(imageLabel.cget("width"), imageLabel.cget("height"))
         )
         imageLabel.configure(image=imageCTk)
         
         resultTextBox = CTkTextbox(
             master=self,
-            width=540,
+            width=460,
             height=580,
             font=("Arial Bold", 14),
             border_width=1,
