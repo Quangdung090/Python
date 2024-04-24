@@ -365,7 +365,10 @@ class TrangChu(CTkFrame):
 
     def upLoadBtn_command(self):
         print("Choose file to upload")
+        self.isUploaded = False
         self.UploadAction()
+        if(self.isUploaded == False):
+            return
         uploadBtn.pack_forget() 
         catAnhBtn.place(x=20,y=20)
 
@@ -448,6 +451,7 @@ class TrangChu(CTkFrame):
             if image_path:
                 img = cv2.imread(image_path)
                 # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ danh sách
+                self.isUploaded = True
                 self.showImg(img)
             else:
                 print("Không có hình trong danh sách.")
@@ -462,6 +466,7 @@ class TrangChu(CTkFrame):
                 self.image_path=image_path
                 img = cv2.imread(image_path)
                 # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ hộp thoại
+                self.isUploaded = True
                 self.showImg(img)
 
     def cropImageAction(self):
