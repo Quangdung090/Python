@@ -4,6 +4,7 @@ from autocorrect import Speller
 from datetime import datetime
 from customtkinter import *
 from trangchu import wordSpliter
+import shutil
 
 class errorFix(CTkFrame):
     def __init__(self, master,TrangChu, **kwargs):
@@ -141,11 +142,17 @@ class errorFix(CTkFrame):
         self.result_txt = "\n".join(result)
         self.changeText(self.result_txt)
         TrangChu.ChangeText(self.result_txt)
+        if(os.path.isdir('history/images')):
+            self.createHistory(TrangChu)
+        if not (os.path.isdir('history/images')):
+            os.makedirs('history/images')
+            self.createHistory(TrangChu)
+
+    def createHistory(self, TrangChu):
         file_name, file_extension = os.path.splitext(TrangChu.current_image_path)
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H--%M--%S")
         history_image_name = f'{dt_string}{file_extension}'
-        import shutil
         shutil.copyfile(TrangChu.current_image_path, f'history/images/{history_image_name}')
         with open('history/history.csv', 'a', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='|', quotechar='"', quoting=csv.QUOTE_ALL)
