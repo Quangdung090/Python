@@ -445,12 +445,8 @@ class TrangChu(CTkFrame):
         print("Choose file to upload")
         self.isUploaded = False
         self.UploadAction()
-        if(self.image_path is None):
-            mb.showwarning("Lỗi!","Chưa chọn ảnh!")
+        if(self.isUploaded == False):
             return
-        else:
-            if(self.isUploaded == False):
-                return
         uploadBtn.pack_forget() 
         catAnhBtn.place(x=20,y=20)
 
