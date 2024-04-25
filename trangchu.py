@@ -76,6 +76,22 @@ class TrangChu(CTkFrame):
             command=self.clearTextBtn_command
         )
         clearTextBtn.place(x=900,y=90)
+        
+        clearAllBtn = CTkButton(
+            master=self,
+            width=150,
+            height=45,
+            fg_color="#f0f7ee",
+            hover_color="#8c8b8b",
+            font=("Arial Bold", 12),
+            text="Clear all",
+            text_color="#000000",
+            border_color="#cccccc",
+            border_width=1,
+            corner_radius=0,
+            command=self.clearAllBtn_command
+        )
+        clearAllBtn.place(x=450,y=90)
 
         global imageLabel
         imageLabel = CTkLabel(
@@ -427,12 +443,15 @@ class TrangChu(CTkFrame):
 
     def upLoadBtn_command(self):
         print("Choose file to upload")
+        self.isUploaded = False
         self.UploadAction()
         if(self.image_path is None):
             mb.showwarning("Lỗi!","Chưa chọn ảnh!")
             return
         else:
-            uploadBtn.pack_forget() 
+            if(self.isUploaded == False):
+            return
+        uploadBtn.pack_forget() 
             catAnhBtn.place(x=20,y=20)
 
     def clearTextBtn_command(self):
@@ -460,6 +479,18 @@ class TrangChu(CTkFrame):
         # Ẩn hết nút
         self.resetDisplay()
 
+    def clearAllBtn_command(self):
+        print("Clear both image & text")
+        output = resultText.get(1.0,END)
+        if(output != "Your text goes here\n"):
+            self.ChangeText("")
+        self.image_selected = False
+        self.image_path = None
+        img = Image.open("img/image.png")
+        nullImg = CTkImage(light_image=img)
+        imageLabel.configure(image = nullImg)
+        imageLabel.configure(text="Click on 'Choose file to upload' to put image here")
+        self.resetDisplay()
 
     def catAnhBtn_command(self):
         print("Cắt ảnh")
@@ -516,6 +547,7 @@ class TrangChu(CTkFrame):
             if image_path:
                 img = cv2.imread(image_path)
                 # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ danh sách
+                self.isUploaded = True
                 self.showImg(img)
             else:
                 print("Không có hình trong danh sách.")
@@ -530,6 +562,7 @@ class TrangChu(CTkFrame):
                 self.image_path=image_path
                 img = cv2.imread(image_path)
                 # Thực hiện các thao tác tiếp theo với ảnh đã chọn từ hộp thoại
+                self.isUploaded = True
                 self.showImg(img)
 
     def cropImageAction(self):
