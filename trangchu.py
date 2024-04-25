@@ -20,7 +20,7 @@ import shutil
 from mltu.inferenceModel import OnnxInferenceModel
 from mltu.utils.text_utils import ctc_decoder
 from mltu.transformers import ImageResizer
-
+from importlib import reload
 class TrangChu(CTkFrame):
     def __init__(self, master, **kwargs):
         self.master = master
@@ -197,10 +197,10 @@ class TrangChu(CTkFrame):
             master=self,
             width=220,
             height=45,
-            fg_color="#cccccc",
-            hover_color="#000000",
-            text="Add To Important Images",
-            text_color="#fffefe",
+            fg_color="#f8bf71",
+            hover_color="#efb176",
+            text="Lưu ảnh",
+            text_color="#a0509a",
             font=("Arial Bold", 14),
             command=self.addImageBtn_command
         )
@@ -210,19 +210,54 @@ class TrangChu(CTkFrame):
             master=self,
             width=200,
             height=45,
-            fg_color="#cccccc",
-            hover_color="#000000",
-            text="All Important Images",
-            text_color="#fffefe",
+            fg_color="#e79792",
+            hover_color="#eea689",
+            text="Tất cả ảnh lưu",
+            text_color="#a74a8f",
             font=("Arial Bold", 14),
             command=self.show_all_images
         )
         allImagesBtn.place(x=380, y=20)
+        
         self.image_path = None  # Khởi tạo image_path là None
         self.image_selected=False
         self.image_list = []  # Danh sách để lưu trữ các đường dẫn của các ảnh đã chọn
         self.flag=False
-
+        
+    # hàm up hình
+    def upload_image(self,event, image_path, selected_image=True):
+        self.current_image_path = image_path
+        # image_path = event.widget.image_path
+        uploadBtn.pack_forget() 
+        catAnhBtn.place(x=20,y=20)
+        self.UploadAction(event, image_path, selected_image)
+        self.image_selected = True
+    
+    # Hàm xóa
+    def delete_image(self,image_path):
+        try:
+            result = mb.askquestion('Xóa ảnh', 'Bạn có muốn xóa ảnh?')
+            if result == 'yes':
+                # Xóa ảnh trong Image_list
+                for path in self.image_list:
+                    # Dùng để cắt lấy đường dẫn cu
+                    if( os.path.basename(path)==os.path.basename(image_path)):
+                        self.image_list.remove(path)
+                        print("danh sach còn lai: ",self.image_list)
+                # Xóa trong folder AllImages
+                for path in os.listdir("AllImages"):
+                    filepath=os.path.join("AllImages",path)
+                    if(filepath==image_path):
+                        os.remove(filepath)
+                        print("Xóa thành công: ",image_path)
+                        messagebox.showinfo("Đã xóa!","Xóa thành công!")
+                # Xóa image_window
+                self.image_window.destroy()
+                # Tạo lại các widget hiển thị hình ảnh
+                self.show_all_images()
+        except Exception as e:
+            print(e)
+    
     def show_all_images(self):
         # Tạo thư mục mới nếu nó chưa tồn tại
         folder_name = "AllImages"
@@ -239,70 +274,81 @@ class TrangChu(CTkFrame):
             messagebox.showinfo("Empty!", "No image!")
             return
         else:
-            def upload_image(event, image_path, selected_image=True):
-                self.current_image_path = image_path
-                # image_path = event.widget.image_path
-                uploadBtn.pack_forget() 
-                catAnhBtn.place(x=20,y=20)
-                self.UploadAction(event, image_path, selected_image)
-                self.image_selected = True
-            
+        
             # Tạo cửa sổ mới để hiển thị ảnh
-            image_window = tk.Toplevel(master=self.master)
-            image_window.title("All Images")
+            self.image_window = tk.Toplevel(master=self.master)
+            self.image_window.title("All Images")
+            window_width = 800
+            window_height = 600
+            # # Lấy kích thước của màn hình
+            screen_width = self.image_window.winfo_screenwidth()
+            screen_height = self.image_window.winfo_screenheight()
+            
+            # Tính toán vị trí của cửa sổ để hiển thị giữa màn hình
+            x = (screen_width - window_width) // 2
+            y = (screen_height - window_height) // 2
 
+            # Đặt kích thước và vị trí cho cửa sổ
+            self.image_window.geometry(f"{window_width}x{window_height}+{x+200}+{y+100}")
             # Tạo một canvas để chứa frame
-            canvas = tk.Canvas(image_window)
+            canvas = tk.Canvas(self.image_window)
             canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
             # Tạo một scrollbar
-            scrollbar = tk.Scrollbar(image_window, orient=tk.VERTICAL, command=canvas.yview)
+            scrollbar = tk.Scrollbar(self.image_window, orient=tk.VERTICAL, command=canvas.yview)
             scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
             # Liên kết scrollbar với canvas
             canvas.configure(yscrollcommand=scrollbar.set)
 
             # Tạo một frame để chứa các widget Label hiển thị ảnh
-            image_frame = tk.Frame(canvas)
-            canvas.create_window((0, 0), window=image_frame, anchor=tk.NW)
-
-            
-            
-            for filename in os.listdir(folder_name):
-                try:
-                    filepath=os.path.join(folder_name,filename)
+            self.image_frame = tk.Frame(canvas, width=800, height=900)
+            canvas.create_window((0, 0), window=self.image_frame, anchor=tk.NW)
+             
+            try:
+                for filename in os.listdir(folder_name):
+                    filepath = os.path.join(folder_name, filename)
                     # Mở ảnh bằng thư viện PIL
                     img = Image.open(filepath)
                     # Resize ảnh nếu cần thiết
                     img.thumbnail((350, 350))  # Set a larger thumbnail size here
                     # Chuyển đổi ảnh sang định dạng mà tkinter có thể hiển thị
                     img_tk = ImageTk.PhotoImage(img)
-                    # Tạo một widget Label để hiển thị ảnh
-                    img_label = tk.Label(
-                        master=image_frame,
-                        text="",
-                        image=img_tk
-                    )
-                    img_label.image = img_tk  # Giữ tham chiếu đến ảnh để tránh bị thu gom bởi Python
-                    img_label.image_path = filepath  # Đặt đường dẫn của ảnh cho thuộc tính image_path
-                    img_label.pack(padx=5, pady=5)
+                    # Tạo một frame để chứa hình ảnh và nút xóa
+                    frame = tk.Frame(master=self.image_frame)
+                    frame.pack()
+
+                    # Hiển thị hình ảnh trong frame
+                    img_tk = ImageTk.PhotoImage(img)
+                    img_label = tk.Label(master=frame, image=img_tk)
+                    img_label.image = img_tk
+                    img_label.grid(row=0, column=0, padx=5, pady=5)
 
                     # Gắn sự kiện chuột click vào label để upload ảnh
-                    img_label.bind("<Button-1>", lambda event, path=filepath: upload_image(event, path))
-                    
+                    img_label.bind("<Button-1>", lambda event, path=filepath: self.upload_image(event, path))
                     
                     # Thêm sự kiện chuột cho hover
                     img_label.bind("<Enter>", lambda event, label=img_label: label.config(borderwidth=2, relief="solid"))
+                    
                     img_label.bind("<Leave>", lambda event, label=img_label: label.config(borderwidth=0, relief="flat"))
-                except Exception as e:
-                    print(f"Error loading image: {e}")
+                    
+                    # Tạo nút xóa trong frame
+                    delete_button = tk.Button(master=frame, text="Xóa", width=10,height=3, command=lambda path=filepath: self.delete_image(path))
+                    delete_button.grid(row=0, column=1, sticky="nw", padx=20, pady=120)
+                    
+                    # Hover vào nút Delete
+                    delete_button.bind("<Enter>", lambda event, button=delete_button: button.config(fg="#fff",bg="#FF0000"))  # Hover vào
+                    delete_button.bind("<Leave>", lambda event, button=delete_button: button.config(fg="black",bg="#fff"))  # Rời khỏi
+                    
+            except Exception as e:
+                print(f"Error loading image: {e}")
 
-        print(self.image_list)
+        print("danh sach: ",self.image_list)
 
         # Cấu hình Canvas để lấy kích thước của frame chứa ảnh
-        image_frame.update_idletasks()
-        frame_width = image_frame.winfo_reqwidth()
-        frame_height = image_frame.winfo_reqheight()
+        self.image_frame.update_idletasks()
+        frame_width = self.image_frame.winfo_reqwidth()
+        frame_height = self.image_frame.winfo_reqheight()
 
     #     # Đặt kích thước của Canvas và kích thước khu vực cuộn của nó
         canvas.config(scrollregion=(0, 0, frame_width, frame_height))
@@ -312,24 +358,41 @@ class TrangChu(CTkFrame):
 
     def addImageBtn_command(self):
         if self.image_selected:  # Kiểm tra xem ảnh đã được chọn chưa
-            result = mb.askquestion('Add To Important Image', 'Do you really want to Add To List?')
+            result = mb.askquestion('Thêm ảnh', 'Bạn có muốn thêm ảnh?')
             if result == 'yes':
+                # Xem ảnh đã tồn tại trong image_list chưa
                 for filePath in self.image_list:
                     if self.image_path == filePath:
-                        mb.showinfo("Existed!","Image existed!")
+                        mb.showwarning("đã tồn tại!","Ảnh đã tồn tại!")
                         self.flag=True
                         break
+                for filename in os.listdir("AllImages"):
+                    filepath=os.path.join("AllImages",filename)
+                    if(os.path.basename(self.image_path) == os.path.basename(filepath)):
+                        mb.showwarning("đã tồn tại!", "Ảnh đã tồn tại!")
+                        self.flag=True
+                        break 
+                print("flag ",self.flag)    
                 if self.flag==True:
                     print("Image Existed")
                     return
                 else:
+                    mb.showinfo("Thành công!","Đã thêm thành công!")
                     self.image_list.append(self.image_path)
+                    # Kiểm tra nếu self.image_window đã được tạo
+                    if getattr(self, 'image_window', None) and self.image_window.winfo_exists():
+                        # Xóa image_window
+                        self.image_window.destroy()
+                        # Tạo lại các widget hiển thị hình ảnh
+                        self.show_all_images()
                     # app.show_all_images(self)
                     print("Them thanh cong:", self.image_path)  
             else:
                 print("Operation cancelled.")
         else:
             print("No image selected.")
+    
+    
     
     def ChangeText(self, changeText):
         resultText.configure(state="normal")
@@ -362,12 +425,15 @@ class TrangChu(CTkFrame):
         duDoanToanBoBtn.place_forget()
         resultText.configure(state="disabled")
 
-
     def upLoadBtn_command(self):
         print("Choose file to upload")
         self.UploadAction()
-        uploadBtn.pack_forget() 
-        catAnhBtn.place(x=20,y=20)
+        if(self.image_path is None):
+            mb.showwarning("Lỗi!","Chưa chọn ảnh!")
+            return
+        else:
+            uploadBtn.pack_forget() 
+            catAnhBtn.place(x=20,y=20)
 
     def clearTextBtn_command(self):
         print("clear Text")
@@ -384,6 +450,7 @@ class TrangChu(CTkFrame):
         # # Ẩn hết nút
         # self.resetDisplay()
         print("clear Image")
+        self.flag=False
         self.image_selected=False
         self.image_path=None
         img = Image.open("img/image.png")
@@ -443,6 +510,7 @@ class TrangChu(CTkFrame):
     def UploadAction(self, event=None, image_path=None, selected_image=False):
         print(selected_image)
         print("UploadAction ", image_path)
+        self.flag=False
         global img
         if selected_image is True:
             if image_path:
