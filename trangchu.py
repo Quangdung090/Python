@@ -450,9 +450,9 @@ class TrangChu(CTkFrame):
             return
         else:
             if(self.isUploaded == False):
-            return
+                return
         uploadBtn.pack_forget() 
-            catAnhBtn.place(x=20,y=20)
+        catAnhBtn.place(x=20,y=20)
 
     def clearTextBtn_command(self):
         print("clear Text")
